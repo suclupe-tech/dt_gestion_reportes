@@ -2,7 +2,7 @@
 <odoo>
     <template id="report_stock_quant_dt_template">
         <t t-call="web.html_container">
-            <t t-call="web.external_layout">
+            <t t-call="dt_gestion_reportes.external_layout_dt">
                 <div class="page">
 
                     <t t-set="total_qty" t-value="sum([q.quantity for q in docs])"/>
@@ -10,9 +10,28 @@
                     <t t-set="with_stock" t-value="sum([1 for q in docs if q.quantity &gt; 0])"/>
                     <t t-set="low_stock" t-value="sum([1 for q in docs if q.quantity &gt; 0 and q.quantity &lt; 10])"/>
 
-                    <p><strong>Fecha:</strong> <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></p>
-                    <p><strong>Usuario:</strong> <span t-esc="user.name"/></p>
-                    <p><strong>Almacén/Ubicación:</strong> <span t-esc="docs[0].location_id.display_name if len(docs.mapped('location_id')) == 1 else 'Varios'"/></p>
+                    <table style="margin-top:5px;margin-bottom:10px;font-size:14px;">
+                        <tr>
+                            <td style="font-weight:bold;padding:2px 18px 2px 0;">Fecha:</td>
+                            <td>
+                                <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-weight:bold;padding:2px 18px 2px 0;">Usuario:</td>
+                            <td>
+                                <span t-esc="user.name"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td style="font-weight:bold;padding:2px 18px 2px 0;">Almacén/Ubicación:</td>
+                            <td>
+                                <span t-esc="docs[0].location_id.display_name if len(docs.mapped('location_id')) == 1 else 'Varios'"/>
+                            </td>
+                        </tr>
+                    </table>
 
                     <h2 style="font-size:24px;font-weight:400;margin-bottom:18px;">Reporte de Stock</h2>
 

@@ -7,6 +7,8 @@
     "depends": ["stock", "product", "sale", "point_of_sale"],
     "data": [
         "views/stock_quant_filters.xml",
+        "report/external_layout_dt.xml",
+        "report/paperformat.xml",
         "report/stock_quant_template.xml",
         "report/stock_quant_report.xml",
         "data/server_action.xml",

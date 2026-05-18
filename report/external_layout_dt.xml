@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="external_layout_dt">
+        <div class="header" style="margin-bottom:0px;padding-bottom:0px;">
+            <table style="width:100%;margin-bottom:8px;">
+                <tr>
+                    <td style="width:80px;vertical-align:top;">
+                        <img t-if="res_company.logo" t-att-src="image_data_uri(res_company.logo)" style="max-height:55px;"/>
+                    </td>
+                    <td style="vertical-align:middle;">
+                        <div style="font-size:17px;font-weight:bold;color:#0b2f5b;">
+                            <span t-esc="res_company.name"/>
+                        </div>
+                        <div style="font-size:11px;">
+                            <span t-esc="res_company.partner_id.street or ''"/>
+                        </div>
+                        <div style="font-size:11px;">
+                            RUC: <span t-esc="res_company.vat"/>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <hr style="margin:2px 0 0px 0;"/>
+        </div>
+        <div style="height:0px;"></div>
+
+        <div class="article">
+            <t t-out="0"/>
+        </div>
+
+        <div class="footer">
+            <div style="border-top:1px solid #ddd;padding-top:5px;font-size:10px;text-align:right;">
+                Página <span class="page"/> / <span class="topage"/>
+            </div>
+        </div>
+    </template>
+</odoo>

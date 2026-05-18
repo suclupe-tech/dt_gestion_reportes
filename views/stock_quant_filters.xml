@@ -64,9 +64,6 @@
                 <filter string="Día" name="dt_group_in_date_day"
                         context="{'group_by':'in_date:day'}"/>
 
-                <filter string="Semana" name="dt_group_in_date_week"
-                        context="{'group_by':'in_date:week'}"/>
-
                 <filter string="Variante" name="dt_group_product_variant" context="{'group_by':'product_id'}"/>
             </xpath>
 
