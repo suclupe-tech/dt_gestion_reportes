@@ -59,7 +59,7 @@
                                 <td><span t-esc="q.in_date.strftime('%d/%m/%Y') if q.in_date else ''"/></td>
                                 <td><span t-esc="q.product_id.default_code or ''"/></td>
                                 <td><span t-field="q.product_id"/></td>
-                                <td><span t-field="q.location_id"/></td>
+                                <td><span t-esc="q.dt_location_label(q.location_id)"/></td>
                                 <td class="text-end"><span t-esc="'%.2f' % q.quantity"/></td>
                             </tr>
                         </tbody>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_product_stock_template">
+        <t t-call="web.html_container">
+            <t t-call="dt_gestion_reportes.external_layout_dt">
+                <div class="page">
+
+                    <h2 style="text-align:center;">REPORTE EXISTENCIAS</h2>
+
+                    <table style="margin-bottom:10px;font-size:13px;">
+                        <tr>
+                            <td><strong>Fecha:</strong></td>
+                            <td><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Usuario:</strong></td>
+                            <td><span t-esc="user.name"/></td>
+                        </tr>
+                    </table>
+
+                    <table class="table table-sm">
+                        <thead>
+                            <tr style="background:#123b63;">
+                                <th style="color:white;">Código</th>
+                                <th style="color:white;">Producto</th>
+                                <th style="color:white;">A la mano</th>
+                                <th style="color:white;">Disponible</th>
+                                <th style="color:white;">Entrante</th>
+                                <th style="color:white;">Saliente</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr t-foreach="docs" t-as="p">
+                                <td><span t-esc="p.default_code or ''"/></td>
+                                <td><span t-esc="p.display_name"/></td>
+                                <td><span t-esc="p.qty_available"/></td>
+                                <td><span t-esc="p.virtual_available"/></td>
+                                <td><span t-esc="p.incoming_qty"/></td>
+                                <td><span t-esc="p.outgoing_qty"/></td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                    <hr/>
+
+                    <table style="width:100%;margin-top:10px;font-size:14px;">
+                        <tr>
+                            <td>
+                                <strong>Total productos:</strong>
+                                <span t-esc="len(docs)"/>
+                            </td>
+
+                            <td style="text-align:right;">
+                                <strong>Total stock:</strong>
+                                <span t-esc="'%.2f' % sum(docs.mapped('qty_available'))"/>
+                            </td>
+                        </tr>
+                    </table>
+
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

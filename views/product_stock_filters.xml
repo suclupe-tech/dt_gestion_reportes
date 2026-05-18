@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="dt_product_stock_filters" model="ir.ui.view">
+        <field name="name">dt.product.stock.filters</field>
+        <field name="model">product.product</field>
+
+        <field name="inherit_id"
+                ref="stock.product_search_form_view_stock_report"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//filter[@name='real_stock_negative']"
+                    position="after">
+
+                <separator/>
+
+                <filter string="Stock bajo (&lt;10)"
+                        name="dt_stock_low"
+                        domain="[('qty_available','&lt;',10),('qty_available','&gt;',0)]"/>
+
+                <filter string="Sin stock"
+                        name="dt_stock_zero"
+                        domain="[('qty_available','&lt;=',0)]"/>
+
+                <filter string="Con stock"
+                        name="dt_stock_ok"
+                        domain="[('qty_available','&gt;',0)]"/>
+
+                <separator/>
+
+                <filter string="Agrupar por categoría POS"
+                        name="dt_group_pos"
+                        context="{'group_by':'pos_categ_ids'}"/>
+
+                <filter string="Agrupar por plantilla"
+                        name="dt_group_template"
+                        context="{'group_by':'product_tmpl_id'}"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

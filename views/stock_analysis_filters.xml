@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dt_stock_analysis_filters" model="ir.ui.view">
+        <field name="name">dt.stock.analysis.filters</field>
+        <field name="model">stock.move</field>
+        <field name="inherit_id" ref="stock.view_move_search"/>
+        <field name="arch" type="xml">
+
+            <xpath expr="//filter[@name='done']" position="after">
+
+                <separator/>
+
+                <filter string="Hoy"
+                        name="dt_today_analysis"
+                        domain="[('date','&gt;=',context_today())]"/>
+
+                <filter string="Este mes"
+                        name="dt_month_analysis"
+                        domain="[('date','&gt;=',(context_today().strftime('%Y-%m-01')))]"/>
+
+                <separator/>
+
+                <filter string="Agrupar por producto"
+                        name="dt_group_product_analysis"
+                        context="{'group_by':'product_id'}"/>
+
+                <filter string="Agrupar por origen"
+                        name="dt_group_source_analysis"
+                        context="{'group_by':'location_id'}"/>
+
+                <filter string="Agrupar por destino"
+                        name="dt_group_dest_analysis"
+                        context="{'group_by':'location_dest_id'}"/>
+
+            </xpath>
+
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="dt_stock_move_filters" model="ir.ui.view">
+        <field name="name">dt.stock.move.filters</field>
+        <field name="model">stock.move.line</field>
+
+        <field name="inherit_id" ref="stock.stock_move_line_view_search"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//filter[@name='internal']"
+                    position="after">
+
+                <separator/>
+
+                <filter string="Hoy"
+                        name="dt_today"
+                        domain="[('date','>=', context_today())]"/>
+
+                <filter string="Este mes"
+                        name="dt_month"
+                        domain="[('date','>=',(context_today().strftime('%Y-%m-01')))]"/>
+
+                <separator/>
+
+                <filter string="Agrupar por producto"
+                        name="dt_group_product"
+                        context="{'group_by':'product_id'}"/>
+
+                <filter string="Agrupar por ubicación origen"
+                        name="dt_group_source"
+                        context="{'group_by':'location_id'}"/>
+
+                <filter string="Agrupar por ubicación destino"
+                        name="dt_group_dest"
+                        context="{'group_by':'location_dest_id'}"/>
+
+            </xpath>
+
+        </field>
+
+    </record>
+
+</odoo>
