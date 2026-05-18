@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Lista -->
+    <record id="dt_pos_order_line_tree" model="ir.ui.view">
+        <field name="name">dt.pos.order.line.tree</field>
+        <field name="model">pos.order.line</field>
+        <field name="arch" type="xml">
+            <list string="Comercial Textil">
+
+                <field name="dt_order_date" string="Fecha"/>
+
+                <field name="order_id"/>
+
+                <field name="dt_config_id" string="Tienda"/>
+
+                <field name="product_id" string="Producto"/>
+
+                <field name="dt_product_template_id" string="Modelo"/>
+
+                <field name="dt_attribute_values"
+                        string="Talla/Color"/>
+
+                <field name="qty" string="Cantidad"/>
+
+                <field name="price_subtotal_incl"
+                        string="Total"/>
+
+            </list>
+        </field>
+    </record>
+
+        <record id="dt_pos_order_line_search" model="ir.ui.view">
+        <field name="name">dt.pos.order.line.search</field>
+        <field name="model">pos.order.line</field>
+        <field name="arch" type="xml">
+            <search string="Comercial Textil">
+                <field name="product_id"/>
+                <field name="dt_product_template_id"/>
+                <field name="dt_config_id"/>
+                <field name="order_id"/>
+
+                <separator/>
+
+                <filter string="Hoy" name="dt_today" domain="[('order_id.date_order','&gt;=',context_today())]"/>
+                <filter string="Este mes" name="dt_this_month" domain="[('order_id.date_order','&gt;=',context_today().strftime('%Y-%m-01'))]"/>
+                <filter string="Cantidad mayor a 0" name="dt_qty_positive" domain="[('qty','&gt;',0)]"/>
+
+                <separator/>
+
+                <filter string="Producto" name="dt_group_product" context="{'group_by':'product_id'}"/>
+                <filter string="Modelo" name="dt_group_template" context="{'group_by':'dt_product_template_id'}"/>
+                <filter string="Talla/Color" name="dt_group_attributes" context="{'group_by':'dt_attribute_values'}"/>
+                <filter string="Tienda" name="dt_group_config" context="{'group_by':'dt_config_id'}"/>
+                <filter string="Fecha" name="dt_group_date" context="{'group_by':'dt_order_date:day'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="dt_pos_order_line_pivot" model="ir.ui.view">
+        <field name="name">dt.pos.order.line.pivot</field>
+        <field name="model">pos.order.line</field>
+
+        <field name="arch" type="xml">
+            <pivot string="Comercial Textil">
+
+                <field name="dt_product_template_id" type="row"/>
+
+                <field name="dt_config_id" type="col"/>
+
+                <field name="qty" type="measure"/>
+
+                <field name="price_subtotal_incl" type="measure"/>
+
+            </pivot>
+        </field>
+    </record>
+
+
+    <!-- Acción -->
+
+    <record id="dt_pos_order_line_action" model="ir.actions.act_window">
+        <field name="name">Comercial Textil</field>
+        <field name="res_model">pos.order.line</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="views" eval="[(ref('dt_gestion_reportes.dt_pos_order_line_pivot'), 'pivot'), (False, 'graph'), (ref('dt_gestion_reportes.dt_pos_order_line_tree'), 'list')]"/>
+        <field name="search_view_id" ref="dt_pos_order_line_search"/>
+    </record>
+
+    <!-- Menú -->
+
+    <menuitem
+        id="menu_dt_comercial_textil"
+        name="Comercial Textil"
+        parent="point_of_sale.menu_point_root"
+        action="dt_pos_order_line_action"
+        sequence="90"/>
+
+</odoo>

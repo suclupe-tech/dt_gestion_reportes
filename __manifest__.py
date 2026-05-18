@@ -10,22 +10,17 @@
         "views/product_stock_filters.xml",
         "views/stock_move_filters.xml",
         "views/stock_analysis_filters.xml",
-
+        "views/pos_commercial_report_views.xml",
         "report/external_layout_dt.xml",
         "report/paperformat.xml",
-
         "report/stock_quant_template.xml",
         "report/stock_quant_report.xml",
-
         "report/product_stock_template.xml",
         "report/product_stock_report.xml",
-
         "report/stock_move_line_template.xml",
         "report/stock_move_line_report.xml",
-
         "report/stock_analysis_report.xml",
         "report/stock_analysis_template.xml",
-
         "data/server_action.xml",
     ],
     "installable": True,
