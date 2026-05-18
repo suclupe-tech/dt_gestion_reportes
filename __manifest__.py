@@ -21,6 +21,8 @@
         "report/stock_move_line_report.xml",
         "report/stock_analysis_report.xml",
         "report/stock_analysis_template.xml",
+        "report/pos_commercial_template.xml",
+        "report/pos_commercial_report.xml",
         "data/server_action.xml",
     ],
     "installable": True,

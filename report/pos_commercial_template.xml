@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_pos_commercial_template">
+        <t t-call="web.html_container">
+            <t t-call="dt_gestion_reportes.external_layout_dt">
+                <div class="page">
+
+                    <t t-set="total_qty" t-value="sum(docs.mapped('qty'))"/>
+                    <t t-set="total_amount" t-value="sum(docs.mapped('price_subtotal_incl'))"/>
+                    <t t-set="total_models" t-value="len(docs.mapped('dt_product_template_id'))"/>
+
+                    <h2 style="text-align:center;">REPORTE COMERCIAL TEXTIL</h2>
+
+                    <table style="margin-bottom:10px;font-size:13px;">
+                        <tr>
+                            <td><strong>Fecha:</strong></td>
+                            <td><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Usuario:</strong></td>
+                            <td><span t-esc="user.name"/></td>
+                        </tr>
+                    </table>
+
+                    <table style="width:100%;margin-bottom:12px;border:1px solid #ddd;background:#f2f2f2;">
+                        <tr>
+                            <td style="text-align:center;padding:8px;">
+                                <strong>Total prendas</strong><br/>
+                                <span t-esc="'%.2f' % total_qty"/>
+                            </td>
+                            <td style="text-align:center;padding:8px;">
+                                <strong>Total modelos</strong><br/>
+                                <span t-esc="total_models"/>
+                            </td>
+                            <td style="text-align:center;padding:8px;">
+                                <strong>Total vendido</strong><br/>
+                                S/ <span t-esc="'%.2f' % total_amount"/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table class="table table-sm">
+                        <thead>
+                            <tr style="background:#123b63;">
+                                <th style="color:white;">Fecha</th>
+                                <th style="color:white;">Tienda</th>
+                                <th style="color:white;">Producto</th>
+                                <th style="color:white;">Modelo</th>
+                                <th style="color:white;">Talla/Color</th>
+                                <th style="color:white;">Cantidad</th>
+                                <th style="color:white;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="docs" t-as="l">
+                                <td><span t-esc="l.dt_order_date.strftime('%d/%m/%Y') if l.dt_order_date else ''"/></td>
+                                <td><span t-esc="l.dt_config_id.name or ''"/></td>
+                                <td><span t-esc="l.product_id.display_name"/></td>
+                                <td><span t-esc="l.dt_product_template_id.name or ''"/></td>
+                                <td><span t-esc="l.dt_attribute_values or ''"/></td>
+                                <td><span t-esc="'%.2f' % l.qty"/></td>
+                                <td>S/ <span t-esc="'%.2f' % l.price_subtotal_incl"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <hr/>
+
+                    <table style="width:100%;font-size:14px;">
+                        <tr>
+                            <td><strong>Total registros:</strong> <span t-esc="len(docs)"/></td>
+                            <td style="text-align:center;"><strong>Total prendas:</strong> <span t-esc="'%.2f' % total_qty"/></td>
+                            <td style="text-align:right;"><strong>Total vendido:</strong> S/ <span t-esc="'%.2f' % total_amount"/></td>
+                        </tr>
+                    </table>
+
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

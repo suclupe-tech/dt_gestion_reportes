@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_pos_commercial_dt" model="ir.actions.report">
+        <field name="name">Reporte Comercial Textil DT</field>
+        <field name="model">pos.order.line</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dt_gestion_reportes.report_pos_commercial_template</field>
+        <field name="report_file">dt_gestion_reportes.report_pos_commercial_template</field>
+        <field name="binding_model_id" ref="point_of_sale.model_pos_order_line"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="dt_gestion_reportes.paperformat_stock_dt"/>
+    </record>
+</odoo>
