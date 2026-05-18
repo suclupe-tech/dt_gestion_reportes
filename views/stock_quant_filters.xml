@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="dt_stock_quant_search_filters" model="ir.ui.view">
+        <field name="name">dt.stock.quant.search.filters</field>
+        <field name="model">stock.quant</field>
+
+        <field name="inherit_id" ref="stock.quant_search_view"/>
+
+        <field name="arch" type="xml">
+
+            <!-- NUEVOS FILTROS -->
+
+            <xpath expr="//filter[@name='negative']" position="after">
+
+                <separator/>
+
+                <filter
+                    string="Solo con stock"
+                    name="dt_qty_positive"
+                    domain="[('quantity','&gt;',0)]"/>
+
+                <filter
+                    string="Sin stock"
+                    name="dt_qty_zero"
+                    domain="[('quantity','=',0)]"/>
+
+                <filter
+                    string="Stock reservado"
+                    name="dt_reserved_stock"
+                    domain="[('reserved_quantity','&gt;',0)]"/>
+
+                <separator/>
+
+                <filter
+                    string="Productos agotados"
+                    name="dt_out_stock"
+                    domain="[('quantity','&lt;=',0)]"/>
+
+                <filter
+                    string="Stock bajo menor a 10"
+                    name="dt_low_stock"
+                    domain="[('quantity','&lt;',10),('quantity','&gt;',0)]"/>
+
+                <filter
+                    string="Con movimiento"
+                    name="dt_with_date"
+                    domain="[('in_date','!=',False)]"/>
+
+            </xpath>
+
+
+            <!-- AGRUPACIONES -->
+
+            <xpath expr="//group" position="inside">
+
+                <separator/>
+
+                <filter
+                    string="Almacén"
+                    name="group_warehouse"
+                    context="{'group_by':'location_id'}"/>
+
+                <filter string="Día" name="dt_group_in_date_day"
+                        context="{'group_by':'in_date:day'}"/>
+
+                <filter string="Semana" name="dt_group_in_date_week"
+                        context="{'group_by':'in_date:week'}"/>
+
+                <filter string="Variante" name="dt_group_product_variant" context="{'group_by':'product_id'}"/>
+            </xpath>
+
+        </field>
+
+    </record>
+
+</odoo>

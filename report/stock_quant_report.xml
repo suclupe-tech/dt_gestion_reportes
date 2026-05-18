@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_stock_dt" model="ir.actions.report">
+        <field name="name">Reporte Stock DT</field>
+        <field name="model">stock.quant</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dt_gestion_reportes.report_stock_quant_dt_template</field>
+        <field name="report_file">dt_gestion_reportes.report_stock_quant_dt_template</field>
+        <field name="binding_model_id" ref="stock.model_stock_quant"/>
+        <field name="binding_type">report</field>
+        <field name="attachment_use">False</field>
+        <field name="multi">True</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+<template id="stock_history_template">
+
+<t t-call="web.html_container">
+
+<t t-foreach="docs" t-as="doc">
+
+<t t-call="web.basic_layout">
+
+<div class="page">
+
+<div style="display:flex;align-items:center;">
+
+    <div style="width:20%;">
+        LOGO
+    </div>
+
+    <div style="width:80%;">
+
+        <h2>DETALLES TEXTILES S.A.C.</h2>
+
+        <h3>REPORTE STOCK HISTÓRICO</h3>
+
+    </div>
+
+</div>
+
+<br/>
+
+<table class="table table-bordered">
+
+<tr>
+    <td><strong>Fecha:</strong></td>
+    <td>
+        <span t-field="doc.date_cutoff"/>
+    </td>
+</tr>
+
+<tr>
+    <td><strong>Usuario:</strong></td>
+    <td>
+        <span t-esc="user.name"/>
+    </td>
+</tr>
+
+</table>
+
+<br/>
+
+<h4>Aquí irá el detalle dinámico</h4>
+
+</div>
+
+</t>
+
+</t>
+
+</t>
+
+</template>
+
+</odoo>
