@@ -7,16 +7,19 @@
 
                     <h2 style="text-align:center;">REPORTE EXISTENCIAS</h2>
 
-                    <table style="margin-bottom:10px;font-size:13px;">
-                        <tr>
-                            <td><strong>Fecha:</strong></td>
-                            <td><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Usuario:</strong></td>
-                            <td><span t-esc="user.name"/></td>
-                        </tr>
-                    </table>
+                    <div style="font-size:13px;margin-bottom:10px;line-height:20px;border:none;">
+    
+                        <div style="border:none;">
+                            <strong>Fecha:</strong>
+                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                        </div>
+
+                        <div style="border:none;">
+                            <strong>Usuario:</strong>
+                            <span t-esc="user.name"/>
+                        </div>
+
+                    </div>
 
                     <table class="table table-sm">
                         <thead>

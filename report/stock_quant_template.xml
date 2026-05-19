@@ -10,28 +10,28 @@
                     <t t-set="with_stock" t-value="sum([1 for q in docs if q.quantity &gt; 0])"/>
                     <t t-set="low_stock" t-value="sum([1 for q in docs if q.quantity &gt; 0 and q.quantity &lt; 10])"/>
 
-                    <table style="margin-top:5px;margin-bottom:10px;font-size:14px;">
-                        <tr>
-                            <td style="font-weight:bold;padding:2px 18px 2px 0;">Fecha:</td>
-                            <td>
-                                <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
-                            </td>
-                        </tr>
+                    <div style="margin-top:5px; margin-bottom:10px;font-size:14px; line-height:22px; border:none;">
+                        <div style="border:none;">
+                            <strong style="display:inline-block;width:150px;">
+                                Fecha:
+                            </strong>
+                            <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/>
+                        </div>
+                        <div style="border:none;">
+                            <strong style="display:inline-block;width:150px;">
+                                Usuario:
+                            </strong>
 
-                        <tr>
-                            <td style="font-weight:bold;padding:2px 18px 2px 0;">Usuario:</td>
-                            <td>
-                                <span t-esc="user.name"/>
-                            </td>
-                        </tr>
+                            <span t-esc="user.name"/>
+                        </div>
+                        <div style="border:none;">
+                            <strong style="display:inline-block;width:150px;">
+                                Almacén/Ubicación:
+                            </strong>
+                            <span t-esc="docs[0].location_id.display_name if len(docs.mapped('location_id')) == 1 else 'Varios'"/>
+                        </div>
 
-                        <tr>
-                            <td style="font-weight:bold;padding:2px 18px 2px 0;">Almacén/Ubicación:</td>
-                            <td>
-                                <span t-esc="docs[0].location_id.display_name if len(docs.mapped('location_id')) == 1 else 'Varios'"/>
-                            </td>
-                        </tr>
-                    </table>
+                    </div>
 
                     <h2 style="font-size:24px;font-weight:400;margin-bottom:18px;">Reporte de Stock</h2>
 

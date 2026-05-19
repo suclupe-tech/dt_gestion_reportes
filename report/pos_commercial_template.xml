@@ -11,16 +11,10 @@
 
                     <h2 style="text-align:center;">REPORTE COMERCIAL TEXTIL</h2>
 
-                    <table style="margin-bottom:10px;font-size:13px;">
-                        <tr>
-                            <td><strong>Fecha:</strong></td>
-                            <td><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Usuario:</strong></td>
-                            <td><span t-esc="user.name"/></td>
-                        </tr>
-                    </table>
+                    <div style="font-size:12px;margin-bottom:8px;border:none;">
+                        <div><strong>Fecha:</strong> <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%d/%m/%Y %H:%M')"/></div>
+                        <div><strong>Usuario:</strong> <span t-esc="user.name"/></div>
+                    </div>
 
                     <table style="width:100%;margin-bottom:12px;border:1px solid #ddd;background:#f2f2f2;">
                         <tr>
@@ -35,6 +29,23 @@
                             <td style="text-align:center;padding:8px;">
                                 <strong>Total vendido</strong><br/>
                                 S/ <span t-esc="'%.2f' % total_amount"/>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <table style="width:100%;margin-bottom:12px;border:1px solid #ddd;background:#f8f8f8;">
+                        <tr>
+                            <td style="text-align:center;padding:8px;">
+                                <strong>Producto más vendido</strong><br/>
+                                <span t-esc="top_product"/>
+                            </td>
+                            <td style="text-align:center;padding:8px;">
+                                <strong>Talla/Color más vendido</strong><br/>
+                                <span t-esc="top_variant"/>
+                            </td>
+                            <td style="text-align:center;padding:8px;">
+                                <strong>Tienda con más venta</strong><br/>
+                                <span t-esc="top_store"/>
                             </td>
                         </tr>
                     </table>
