@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="dt_pos_order_search_filters" model="ir.ui.view">
+        <field name="name">dt.pos.order.search.filters</field>
+        <field name="model">pos.order</field>
+        <field name="inherit_id" ref="point_of_sale.view_pos_order_filter"/>
+
+        <field name="arch" type="xml">
+
+            <xpath expr="//search/separator[last()]" position="after">
+
+                <!-- <filter string="Tipo documento"
+                        name="dt_group_tipo_documento"
+                        context="{'group_by':'dt_tipo_documento'}"/> -->
+
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>
