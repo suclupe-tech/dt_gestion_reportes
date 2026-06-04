@@ -29,7 +29,7 @@
             </xpath>
 
             <!-- BOTÓN IMPRIMIR CUANDO ESTÁ HECHO / DONE -->
-            <xpath expr="//header/button[@type='action' and @name='306']" position="replace">
+            <xpath expr="//header/button[@type='action' and @string='Print']" position="replace">
 
                 <!-- Nuestro reporte para traslados internos -->
                 <button name="action_print_internal_transfer_dt"
@@ -40,12 +40,17 @@
                         data-hotkey="o"/>
 
                 <!-- Reporte normal de Odoo para los demás tipos -->
-                <button name="306"
+                <button name="%(stock.action_report_picking)d"
                         string="Imprimir"
                         invisible="state != 'done' or picking_type_code == 'internal'"
                         type="action"
                         groups="base.group_user"
                         data-hotkey="o"/>
+
+            </xpath>
+
+            <!-- BOTÓN TICKET PARA TRASLADOS INTERNOS -->
+            <xpath expr="//header" position="inside">
 
                 <button name="action_open_internal_transfer_ticket_dt"
                         string="Ticket"
