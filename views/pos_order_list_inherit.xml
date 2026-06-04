@@ -5,6 +5,7 @@
         <field name="name">pos.order.tree.dt.clean.accounting</field>
         <field name="model">pos.order</field>
         <field name="inherit_id" ref="point_of_sale.view_pos_order_tree"/>
+        <field name="priority">99</field>
         <field name="arch" type="xml">
 
             <!-- OCULTAR COLUMNAS QUE NO NECESITAS -->
@@ -54,8 +55,8 @@
                 <attribute name="optional">show</attribute>
             </xpath>
 
-            <!-- EMPLEADO / USUARIO -->
-            <xpath expr="//field[@name='user_id']" position="attributes">
+            <!-- EMPLEADO -->
+            <xpath expr="//field[@name='employee_id']" position="attributes">
                 <attribute name="string">Empleado</attribute>
                 <attribute name="optional">show</attribute>
             </xpath>
