@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_picking_form_print_dt_inherit" model="ir.ui.view">
+        <field name="name">stock.picking.form.print.dt.inherit</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+
+            <!-- BOTÓN IMPRIMIR CUANDO ESTÁ LISTO / ASSIGNED -->
+            <xpath expr="//header/button[@name='do_print_picking']" position="replace">
+
+                <!-- Nuestro reporte para traslados internos -->
+                <button name="action_print_internal_transfer_dt"
+                        string="Imprimir"
+                        groups="stock.group_stock_user"
+                        type="object"
+                        invisible="state != 'assigned' or picking_type_code != 'internal'"
+                        data-hotkey="o"/>
+
+                <!-- Reporte normal de Odoo para los demás tipos -->
+                <button name="do_print_picking"
+                        string="Imprimir"
+                        groups="stock.group_stock_user"
+                        type="object"
+                        invisible="state != 'assigned' or picking_type_code == 'internal'"
+                        data-hotkey="o"/>
+
+            </xpath>
+
+            <!-- BOTÓN IMPRIMIR CUANDO ESTÁ HECHO / DONE -->
+            <xpath expr="//header/button[@type='action' and @name='306']" position="replace">
+
+                <!-- Nuestro reporte para traslados internos -->
+                <button name="action_print_internal_transfer_dt"
+                        string="Imprimir"
+                        groups="base.group_user"
+                        type="object"
+                        invisible="state != 'done' or picking_type_code != 'internal'"
+                        data-hotkey="o"/>
+
+                <!-- Reporte normal de Odoo para los demás tipos -->
+                <button name="306"
+                        string="Imprimir"
+                        invisible="state != 'done' or picking_type_code == 'internal'"
+                        type="action"
+                        groups="base.group_user"
+                        data-hotkey="o"/>
+
+                <button name="action_open_internal_transfer_ticket_dt"
+                        string="Ticket"
+                        type="object"
+                        class="btn-secondary"
+                        groups="stock.group_stock_user"
+                        invisible="picking_type_code != 'internal' or state not in ['assigned', 'done']"/>
+
+            </xpath>
+
+        </field>
+    </record>
+
+</odoo>

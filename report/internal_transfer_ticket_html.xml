@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="internal_transfer_ticket_html">
+        <html>
+            <head>
+                <meta charset="utf-8"/>
+
+                <style>
+                    @page {
+                        size: 80mm auto;
+                        margin: 0;
+                    }
+
+                    html, body {
+                        margin: 0;
+                        padding: 0;
+                        background: #fff;
+                        color: #000;
+                        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+                        font-size: 11px;
+                        line-height: 1.35;
+                        font-weight: 400;
+                    }
+
+                    .ticket {
+                        width: 80mm;
+                        max-width: 80mm;
+                        padding: 2mm 3mm;
+                        box-sizing: border-box;
+                    }
+
+                    .center {
+                        text-align: center;
+                    }
+
+                    .line {
+                        border-top: 1px dashed #000;
+                        margin: 6px 0 5px 0;
+                    }
+
+                    .row {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: flex-start;
+                        margin-bottom: 2px;
+                        gap: 5px;
+                    }
+
+                    .label {
+                        font-weight: 600;
+                        white-space: nowrap;
+                    }
+
+                    .value {
+                        text-align: right;
+                        word-break: break-word;
+                    }
+
+                    .title {
+                        font-size: 12px;
+                        font-weight: 600;
+                        letter-spacing: 0.2px;
+                    }
+
+                    .subtitle {
+                        font-size: 12px;
+                        font-weight: 700;
+                        margin-top: 2px;
+                    }
+
+                    .small {
+                        font-size: 9px;
+                        line-height: 1.25;
+                    }
+
+                    .product-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        font-size: 10px;
+                    }
+
+                    .product-table th {
+                        border-bottom: 1px solid #000;
+                        padding-bottom: 3px;
+                        font-weight: 700;
+                    }
+
+                    .product-table td {
+                        padding-top: 3px;
+                        vertical-align: top;
+                    }
+
+                    .product-name {
+                        width: 68%;
+                        word-break: break-word;
+                    }
+
+                    .qty {
+                        width: 22%;
+                        text-align: right;
+                        white-space: nowrap;
+                    }
+
+                    .box-total {
+                        padding: 2px 0;
+                        margin: 7px 0;
+                        font-weight: 600;
+                        font-size: 12px;
+                    }
+
+                    .no-print {
+                        margin-top: 12px;
+                        text-align: center;
+                    }
+
+                    .no-print button {
+                        padding: 8px 14px;
+                        font-size: 13px;
+                    }
+
+                    @media print {
+                        .no-print {
+                            display: none !important;
+                        }
+
+                        body {
+                            margin: 0;
+                        }
+                    }
+                </style>
+
+                <script>
+                    window.onload = function () {
+                        setTimeout(function () {
+                            window.print();
+                        }, 500);
+                    };
+                </script>
+            </head>
+
+            <body>
+                <t t-set="helper_move" t-value="docs.move_ids[:1]"/>
+                <t t-set="total_prendas" t-value="0"/>
+                <t t-set="contador" t-value="0"/>
+
+                <div class="ticket">
+
+                    <!-- CABECERA -->
+                    <div class="center">
+                        <div t-if="company.logo" style="margin-bottom:3px;">
+                            <img t-att-src="image_data_uri(company.logo)"
+                                    style="max-height:32px; max-width:55mm;"/>
+                        </div>
+
+                        <div style="font-size:13px; font-weight:900; text-transform:uppercase;">
+                            <t t-esc="company.name"/>
+                        </div>
+
+                        <div class="small">
+                            RUC:
+                            <t t-esc="company.vat or ''"/>
+                        </div>
+                    </div>
+
+                    <div class="line"></div>
+
+                    <!-- TITULO -->
+                    <div class="center title">
+                        ENVÍO DE MERCADERÍA
+                    </div>
+
+                    <div class="center subtitle">
+                        <t t-esc="docs.name"/>
+                    </div>
+
+                    <div class="line"></div>
+
+                    <!-- DATOS -->
+                    <div class="row">
+                        <span class="label">Fecha</span>
+                        <span class="value">
+                            <t t-if="docs.scheduled_date">
+                                <span t-field="docs.scheduled_date" t-options="{'widget': 'datetime'}"/>
+                            </t>
+                            <t t-else="">-</t>
+                        </span>
+                    </div>
+
+                    <div class="row">
+                        <span class="label">Responsable</span>
+                        <span class="value">
+                            <t t-if="docs.user_id">
+                                <t t-esc="docs.user_id.name"/>
+                            </t>
+                            <t t-else="">-</t>
+                        </span>
+                    </div>
+
+                    <div class="row">
+                        <span class="label">Referencia</span>
+                        <span class="value">
+                            <t t-if="docs.origin">
+                                <t t-esc="docs.origin"/>
+                            </t>
+                            <t t-else="">-</t>
+                        </span>
+                    </div>
+
+                    <div class="row">
+                        <span class="label">Origen</span>
+                        <span class="value">
+                            <t t-if="docs.location_id and helper_move">
+                                <t t-esc="helper_move.dt_location_label(docs.location_id)"/>
+                            </t>
+                            <t t-elif="docs.location_id">
+                                <t t-esc="docs.location_id.display_name"/>
+                            </t>
+                            <t t-else="">-</t>
+                        </span>
+                    </div>
+
+                    <div class="row">
+                        <span class="label">Destino</span>
+                        <span class="value">
+                            <t t-if="docs.location_dest_id and helper_move">
+                                <t t-esc="helper_move.dt_location_label(docs.location_dest_id)"/>
+                            </t>
+                            <t t-elif="docs.location_dest_id">
+                                <t t-esc="docs.location_dest_id.display_name"/>
+                            </t>
+                            <t t-else="">-</t>
+                        </span>
+                    </div>
+
+                    <div class="line"></div>
+
+                    <!-- PRODUCTOS -->
+                    <table class="product-table">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; width:8%;">#</th>
+                                <th style="text-align:left;">Producto</th>
+                                <th style="text-align:right;">Cant.</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <t t-foreach="docs.move_ids" t-as="line">
+                                <t t-set="cantidad"
+                                    t-value="line.quantity if 'quantity' in line._fields and line.quantity else line.product_uom_qty"/>
+
+                                <t t-if="cantidad">
+                                    <t t-set="contador" t-value="contador + 1"/>
+                                    <t t-set="total_prendas" t-value="total_prendas + cantidad"/>
+
+                                    <tr>
+                                        <td>
+                                            <t t-esc="contador"/>
+                                        </td>
+
+                                        <td class="product-name">
+                                            <t t-esc="line.product_id.display_name"/>
+                                        </td>
+
+                                        <td class="qty">
+                                            <t t-esc="'%.2f' % cantidad"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </t>
+                        </tbody>
+                    </table>
+
+                    <div class="line"></div>
+
+                    <!-- TOTAL -->
+                    <div class="line"></div>
+
+                    <div class="box-total">
+                        <div class="row" style="margin-bottom:0;">
+                            <span>Total Prendas</span>
+                            <span>
+                                <t t-esc="'%.2f' % total_prendas"/>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="line"></div>
+
+                    <!-- FIRMAS -->
+                    <div style="margin-top:34px; text-align:center;">
+                        <div style="display:inline-block; width:47%; text-align:center; vertical-align:top;">
+                            <div>____________</div>
+                            <div style="margin-top:3px; font-weight:700; font-size:9px;">
+                                ENTREGADO
+                            </div>
+                        </div>
+
+                        <div style="display:inline-block; width:47%; text-align:center; vertical-align:top;">
+                            <div>____________</div>
+                            <div style="margin-top:3px; font-weight:700; font-size:9px;">
+                                RECIBIDO
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="no-print">
+                    <button onclick="window.print()">Imprimir otra vez</button>
+                </div>
+            </body>
+        </html>
+    </template>
+</odoo>

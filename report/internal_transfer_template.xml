@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_internal_transfer_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="dt_gestion_reportes.external_layout_dt">
+                    <div class="page">
+
+                        <t t-set="helper_move" t-value="doc.move_ids[:1]"/>
+                        <t t-set="total_prendas" t-value="0"/>
+                        <t t-set="contador" t-value="0"/>
+
+                        <h2 style="text-align:center; margin-top:4px; margin-bottom:10px; font-size:24px; font-weight:400; letter-spacing:2px;">
+                            ENVÍO DE MERCADERÍA
+                        </h2>
+
+                        <div style="font-size:12px;margin-bottom:12px;line-height:19px;border:none;width:100%;">
+
+                            <div style="width:100%;border:none;">
+                                <div style="display:inline-block;width:49%;border:none;vertical-align:top;">
+                                    <strong style="display:inline-block;width:125px;">Traslado interno:</strong>
+                                    <span t-esc="doc.name"/>
+                                </div>
+
+                                <div style="display:inline-block;width:49%;border:none;vertical-align:top;">
+                                    <strong style="display:inline-block;width:120px;">Fecha de envío:</strong>
+                                    <t t-if="doc.scheduled_date">
+                                        <span t-field="doc.scheduled_date" t-options="{'widget': 'datetime'}"/>
+                                    </t>
+                                    <t t-else="">-</t>
+                                </div>
+                            </div>
+
+                            <div style="width:100%;border:none;">
+                                <div style="display:inline-block;width:49%;border:none;vertical-align:top;">
+                                    <strong style="display:inline-block;width:125px;">Responsable:</strong>
+                                    <t t-if="doc.user_id">
+                                        <span t-esc="doc.user_id.name"/>
+                                    </t>
+                                    <t t-else="">-</t>
+                                </div>
+
+                                <div style="display:inline-block;width:49%;border:none;vertical-align:top;">
+                                    <strong style="display:inline-block;width:120px;">Referencia:</strong>
+                                    <t t-if="doc.origin">
+                                        <span t-esc="doc.origin"/>
+                                    </t>
+                                    <t t-else="">-</t>
+                                </div>
+                            </div>
+
+                            <div style="width:100%;border:none;">
+                                <div style="display:inline-block;width:49%;border:none;vertical-align:top;">
+                                    <strong style="display:inline-block;width:125px;">Origen:</strong>
+                                    <t t-if="doc.location_id and helper_move">
+                                        <span t-esc="helper_move.dt_location_label(doc.location_id)"/>
+                                    </t>
+                                    <t t-elif="doc.location_id">
+                                        <span t-esc="doc.location_id.display_name"/>
+                                    </t>
+                                    <t t-else="">-</t>
+                                </div>
+
+                                <div style="display:inline-block;width:49%;border:none;vertical-align:top;">
+                                    <strong style="display:inline-block;width:120px;">Destino:</strong>
+                                    <t t-if="doc.location_dest_id and helper_move">
+                                        <span t-esc="helper_move.dt_location_label(doc.location_dest_id)"/>
+                                    </t>
+                                    <t t-elif="doc.location_dest_id">
+                                        <span t-esc="doc.location_dest_id.display_name"/>
+                                    </t>
+                                    <t t-else="">-</t>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <table class="table table-sm">
+                            <thead>
+                                <tr style="background:#123b63;">
+                                    <th style="color:white;text-align:center;width:7%;">#</th>
+                                    <th style="color:white;">Producto / Descripción</th>
+                                    <th style="color:white;text-align:right;width:22%;">Cantidad enviada</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <t t-foreach="doc.move_ids" t-as="line">
+
+                                    <t t-set="cantidad"
+                                        t-value="line.quantity if 'quantity' in line._fields and line.quantity else line.product_uom_qty"/>
+
+                                    <t t-if="cantidad">
+                                        <t t-set="contador" t-value="contador + 1"/>
+                                        <t t-set="total_prendas" t-value="total_prendas + cantidad"/>
+
+                                        <tr>
+                                            <td style="text-align:center;">
+                                                <span t-esc="contador"/>
+                                            </td>
+
+                                            <td>
+                                                <span t-esc="line.product_id.display_name"/>
+                                            </td>
+
+                                            <td style="text-align:right;">
+                                                <span t-esc="'%.2f' % cantidad"/>
+                                                <span t-if="line.product_uom" t-esc="' ' + line.product_uom.name"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+
+                                </t>
+                            </tbody>
+
+                            <tfoot>
+                                <tr style="border-top:1px solid #333;">
+                                    <td colspan="2">
+                                        <strong>TOTAL PRENDAS ENVIADAS</strong>
+                                    </td>
+
+                                    <td style="text-align:right;">
+                                        <strong>
+                                            <span t-esc="'%.2f' % total_prendas"/>
+                                            unidades
+                                        </strong>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <div style="width:100%; margin-top:65px; font-size:11px;">
+
+                            <div style="display:inline-block; width:45%; text-align:center; vertical-align:top;">
+                                <div style="border-top:1px solid #111; width:80%; margin:0 auto; padding-top:6px; font-weight:bold;">
+                                    ENTREGADO POR
+                                </div>
+                            </div>
+
+                            <div style="display:inline-block; width:9%;"></div>
+
+                            <div style="display:inline-block; width:45%; text-align:center; vertical-align:top;">
+                                <div style="border-top:1px solid #111; width:80%; margin:0 auto; padding-top:6px; font-weight:bold;">
+                                    RECIBIDO POR
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
