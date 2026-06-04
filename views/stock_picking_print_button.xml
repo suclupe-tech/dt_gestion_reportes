@@ -10,7 +10,6 @@
             <!-- BOTÓN IMPRIMIR CUANDO ESTÁ LISTO / ASSIGNED -->
             <xpath expr="//header/button[@name='do_print_picking']" position="replace">
 
-                <!-- Nuestro reporte para traslados internos -->
                 <button name="action_print_internal_transfer_dt"
                         string="Imprimir"
                         groups="stock.group_stock_user"
@@ -18,7 +17,6 @@
                         invisible="state != 'assigned' or picking_type_code != 'internal'"
                         data-hotkey="o"/>
 
-                <!-- Reporte normal de Odoo para los demás tipos -->
                 <button name="do_print_picking"
                         string="Imprimir"
                         groups="stock.group_stock_user"
@@ -29,9 +27,8 @@
             </xpath>
 
             <!-- BOTÓN IMPRIMIR CUANDO ESTÁ HECHO / DONE -->
-            <xpath expr="//header/button[@type='action' and @string='Print']" position="replace">
+            <xpath expr="//header/button[@type='action' and @data-hotkey='o']" position="replace">
 
-                <!-- Nuestro reporte para traslados internos -->
                 <button name="action_print_internal_transfer_dt"
                         string="Imprimir"
                         groups="base.group_user"
@@ -39,7 +36,6 @@
                         invisible="state != 'done' or picking_type_code != 'internal'"
                         data-hotkey="o"/>
 
-                <!-- Reporte normal de Odoo para los demás tipos -->
                 <button name="%(stock.action_report_picking)d"
                         string="Imprimir"
                         invisible="state != 'done' or picking_type_code == 'internal'"
