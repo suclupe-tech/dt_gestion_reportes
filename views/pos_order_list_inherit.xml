@@ -55,11 +55,11 @@
                 <attribute name="optional">show</attribute>
             </xpath>
 
-            <!-- EMPLEADO -->
-            <xpath expr="//field[@name='employee_id']" position="attributes">
-                <attribute name="string">Empleado</attribute>
-                <attribute name="optional">show</attribute>
-            </xpath>
+            <!-- <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="user_id"
+                    string="Vendedor"
+                    optional="show"/>
+            </xpath> -->
 
             <!-- TOTAL -->
             <xpath expr="//field[@name='amount_total']" position="attributes">
