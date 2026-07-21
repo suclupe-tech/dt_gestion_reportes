@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="dt_gestion_reportes.DashboardTiendas">
+
+        <div class="p-3" style="height: calc(100vh - 80px); overflow-y: auto; overflow-x: hidden;">
+
+            <!-- CABECERA -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">Dashboard Tiendas</h2>
+
+                <div class="d-flex align-items-end gap-2">
+                    <div>
+                        <label class="form-label mb-1">Desde</label>
+                        <input type="date"
+                            class="form-control"
+                            t-att-value="state.filters.date_from"
+                            t-on-change="onChangeDateFrom"/>
+                    </div>
+
+                    <div>
+                        <label class="form-label mb-1">Hasta</label>
+                        <input type="date"
+                            class="form-control"
+                            t-att-value="state.filters.date_to"
+                            t-on-change="onChangeDateTo"/>
+                    </div>
+
+                    <div>
+                        <label class="form-label mb-1">Punto de venta</label>
+                        <select class="form-select"
+                                t-att-value="state.filters.pos_config_id"
+                                t-on-change="onChangePosConfig">
+                            <option value="">Todos</option>
+                            <t t-foreach="state.data.puntos_venta" t-as="pos" t-key="pos.id">
+                                <option t-att-value="pos.id">
+                                    <t t-esc="pos.name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-primary" t-on-click="loadData">
+                        Actualizar
+                    </button>
+                </div>
+            </div>
+
+            <!-- CARGANDO -->
+            <t t-if="state.loading">
+                <div class="alert alert-info">
+                    Cargando datos del dashboard...
+                </div>
+            </t>
+
+            <!-- CONTENIDO -->
+            <t t-else="">
+
+                <div class="alert alert-success py-2">
+                    Datos cargados correctamente desde POS.
+                </div>
+
+                <!-- TARJETAS KPI -->
+                <div class="row mt-3">
+
+                    <div class="col-md-2 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <small>Ventas del periodo</small>
+                                <h4 class="mb-0">S/ <t t-esc="formatMoney(state.data.ventas_hoy)"/></h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <small>Órdenes del periodo</small>
+                                <h4 class="mb-0"><t t-esc="state.data.ordenes_hoy"/></h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <small>Ticket promedio</small>
+                                <h4 class="mb-0">S/ <t t-esc="formatMoney(state.data.ticket_promedio)"/></h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <small>Prendas vendidas</small>
+                                <h4 class="mb-0"><t t-esc="state.data.prendas_vendidas"/></h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 mb-3">
+                        <div class="card shadow-sm border-danger h-100">
+                            <div class="card-body py-3">
+                                <small>Errores SUNAT</small>
+                                <h4 class="mb-0"><t t-esc="state.data.sunat_error"/></h4>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- FILA 1: 3 TABLAS -->
+                <div class="row mt-2">
+
+                    <!-- VENTAS POR TIENDA -->
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <h5 class="mb-3">Ventas por tienda</h5>
+
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Tienda</th>
+                                            <th class="text-end">Órdenes</th>
+                                            <th class="text-end">Ventas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="state.data.ventas_por_tienda.length">
+                                            <t t-foreach="state.data.ventas_por_tienda" t-as="line" t-key="line.tienda">
+                                                <tr>
+                                                    <td><t t-esc="line.tienda"/></td>
+                                                    <td class="text-end"><t t-esc="line.ordenes"/></td>
+                                                    <td class="text-end">S/ <t t-esc="formatMoney(line.ventas)"/></td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">
+                                                    Sin ventas.
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VENTAS POR MEDIO DE PAGO -->
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <h5 class="mb-3">Ventas por medio de pago</h5>
+
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Medio</th>
+                                            <th class="text-end">Ops.</th>
+                                            <th class="text-end">Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="state.data.ventas_por_medio.length">
+                                            <t t-foreach="state.data.ventas_por_medio" t-as="line" t-key="line.medio">
+                                                <tr>
+                                                    <td><t t-esc="line.medio"/></td>
+                                                    <td class="text-end"><t t-esc="line.cantidad"/></td>
+                                                    <td class="text-end">S/ <t t-esc="formatMoney(line.monto)"/></td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">
+                                                    Sin pagos.
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- VENTAS POR TIPO DE DOCUMENTO -->
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <h5 class="mb-3">Ventas por documento</h5>
+
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Documento</th>
+                                            <th class="text-end">Órdenes</th>
+                                            <th class="text-end">Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="state.data.ventas_por_documento.length">
+                                            <t t-foreach="state.data.ventas_por_documento" t-as="line" t-key="line.tipo">
+                                                <tr>
+                                                    <td><t t-esc="line.tipo"/></td>
+                                                    <td class="text-end"><t t-esc="line.ordenes"/></td>
+                                                    <td class="text-end">S/ <t t-esc="formatMoney(line.monto)"/></td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">
+                                                    Sin documentos.
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- FILA 2: 3 TABLAS -->
+                <div class="row mt-2">
+
+                    <!-- TOP PRODUCTOS -->
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <h5 class="mb-3">Top productos vendidos</h5>
+
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th class="text-end">Cant.</th>
+                                            <th class="text-end">Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="state.data.top_productos.length">
+                                            <t t-foreach="state.data.top_productos" t-as="line" t-key="line.producto">
+                                                <tr>
+                                                    <td><t t-esc="line.producto"/></td>
+                                                    <td class="text-end"><t t-esc="line.cantidad"/></td>
+                                                    <td class="text-end">S/ <t t-esc="formatMoney(line.monto)"/></td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">
+                                                    Sin productos.
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ESTADO SUNAT -->
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <h5 class="mb-3">Estado SUNAT</h5>
+
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Estado</th>
+                                            <th class="text-end">Cantidad</th>
+                                            <th class="text-end">Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="state.data.estado_sunat.length">
+                                            <t t-foreach="state.data.estado_sunat" t-as="line" t-key="line.estado">
+                                                <tr>
+                                                    <td><t t-esc="line.estado"/></td>
+                                                    <td class="text-end"><t t-esc="line.cantidad"/></td>
+                                                    <td class="text-end">S/ <t t-esc="formatMoney(line.monto)"/></td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">
+                                                    Sin estados SUNAT.
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ANULACIONES Y DEVOLUCIONES -->
+                    <div class="col-xl-4 col-lg-6 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body py-3">
+                                <h5 class="mb-3">Anulaciones y devoluciones</h5>
+
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Concepto</th>
+                                            <th class="text-end">Cant.</th>
+                                            <th class="text-end">Monto</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-if="state.data.anulaciones_devoluciones.length">
+                                            <t t-foreach="state.data.anulaciones_devoluciones" t-as="line" t-key="line.concepto">
+                                                <tr>
+                                                    <td><t t-esc="line.concepto"/></td>
+                                                    <td class="text-end"><t t-esc="line.cantidad"/></td>
+                                                    <td class="text-end">S/ <t t-esc="formatMoney(line.monto)"/></td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                        <t t-else="">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted">
+                                                    Sin anulaciones ni devoluciones.
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </t>
+        </div>
+    </t>
+
+</templates>

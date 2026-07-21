@@ -4,7 +4,7 @@
     "category": "Inventory",
     "summary": "Reportes dinámicos Detalles Textiles",
     "author": "Detalles Textiles",
-    "depends": ["stock", "product", "sale", "point_of_sale", "pos_sunat_direct"],
+    "depends": ["stock", "product", "sale", "point_of_sale", "pos_sunat_direct", "web"],
     "data": [
         "views/stock_quant_filters.xml",
         "views/product_stock_filters.xml",
@@ -14,6 +14,7 @@
         "views/pos_order_filters.xml",
         "views/stock_picking_print_button.xml",
         "views/pos_order_list_inherit.xml",
+        "views/dashboard_tiendas_views.xml",
         "report/external_layout_dt.xml",
         "report/paperformat.xml",
         "report/stock_quant_template.xml",
@@ -32,6 +33,12 @@
         "data/server_action.xml",
         "data/pos_order_excel_action.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "dt_gestion_reportes/static/src/js/dashboard_tiendas.js",
+            "dt_gestion_reportes/static/src/xml/dashboard_tiendas.xml",
+        ],
+    },
     "installable": True,
     "application": True,
     "license": "LGPL-3",
