@@ -42,10 +42,10 @@ class DashboardTiendasController(http.Controller):
         if "es_reversa_anulacion" in PosOrder._fields:
             domain_hoy.append(("es_reversa_anulacion", "=", False))
 
-        orders_hoy = PosOrder.search(domain_hoy)
-
         if pos_config_id:
             domain_hoy.append(("config_id", "=", int(pos_config_id)))
+
+        orders_hoy = PosOrder.search(domain_hoy)
 
         ventas_hoy = sum(orders_hoy.mapped("amount_total"))
         ordenes_hoy = len(orders_hoy)
@@ -218,6 +218,9 @@ class DashboardTiendasController(http.Controller):
                 "xml_firmado": "XML firmado",
                 "enviado": "Enviado",
                 "rechazado": "Rechazado",
+                "respuesta_sunat": "Con respuesta SUNAT",
+                "pendiente_envio": "Pendiente de envío",
+                "sin_estado": "Sin estado SUNAT",
             }
 
             estado_nombre = nombres_estado.get(estado, estado)
@@ -236,49 +239,71 @@ class DashboardTiendasController(http.Controller):
 
         estado_sunat = sorted(estado_sunat, key=lambda x: x["cantidad"], reverse=True)
 
+        domain_operaciones = [
+            ("date_order", ">=", fields.Datetime.to_string(start_utc)),
+            ("date_order", "<=", fields.Datetime.to_string(end_utc)),
+            ("state", "in", ["paid", "done", "invoiced"]),
+        ]
+
+        if pos_config_id:
+            domain_operaciones.append(("config_id", "=", int(pos_config_id)))
+
+        orders_operaciones = PosOrder.search(domain_operaciones)
+
         anulaciones_devoluciones = []
 
         # Ventas anuladas
-        ventas_anuladas = orders_hoy.filtered(
+        ventas_anuladas = orders_operaciones.filtered(
             lambda o: getattr(o, "venta_anulada", False)
         )
 
         monto_anuladas = sum(ventas_anuladas.mapped("amount_total"))
 
-        anulaciones_devoluciones.append({
-            "concepto": "Ventas anuladas",
-            "cantidad": len(ventas_anuladas),
-            "monto": monto_anuladas,
-        })
+        anulaciones_devoluciones.append(
+            {
+                "concepto": "Órdenes anuladas",
+                "cantidad": len(ventas_anuladas),
+                "monto": monto_anuladas,
+            }
+        )
 
         # Reversas de anulación
-        reversas_anulacion = orders_hoy.filtered(
+        reversas_anulacion = orders_operaciones.filtered(
             lambda o: getattr(o, "es_reversa_anulacion", False)
         )
 
-        monto_reversas = sum(reversas_anulacion.mapped("amount_total"))
+        monto_reversas = abs(sum(reversas_anulacion.mapped("amount_total")))
 
-        anulaciones_devoluciones.append({
-            "concepto": "Reversas de anulación",
-            "cantidad": len(reversas_anulacion),
-            "monto": monto_reversas,
-        })
+        anulaciones_devoluciones.append(
+            {
+                "concepto": "Reversas de anulación",
+                "cantidad": len(reversas_anulacion),
+                "monto": monto_reversas,
+            }
+        )
 
         # Devoluciones / reembolsos por líneas negativas
         ordenes_con_devolucion = request.env["pos.order"]
 
-        for order in orders_hoy:
-            tiene_linea_negativa = any(line.qty < 0 or line.price_subtotal_incl < 0 for line in order.lines)
+        for order in orders_operaciones:
+            # No contar reversas de anulación como devolución/reembolso
+            if getattr(order, "es_reversa_anulacion", False):
+                continue
+
+            tiene_linea_negativa = any(line.qty < 0 for line in order.lines)
+
             if tiene_linea_negativa:
                 ordenes_con_devolucion |= order
 
-        monto_devoluciones = sum(ordenes_con_devolucion.mapped("amount_total"))
+        monto_devoluciones = abs(sum(ordenes_con_devolucion.mapped("amount_total")))
 
-        anulaciones_devoluciones.append({
-            "concepto": "Devoluciones / reembolsos",
-            "cantidad": len(ordenes_con_devolucion),
-            "monto": monto_devoluciones,
-        })
+        anulaciones_devoluciones.append(
+            {
+                "concepto": "Devoluciones / reembolsos",
+                "cantidad": len(ordenes_con_devolucion),
+                "monto": monto_devoluciones,
+            }
+        )
 
         prendas_vendidas = 0
 
@@ -322,14 +347,14 @@ class DashboardTiendasController(http.Controller):
             ("date_order", "<=", fields.Datetime.to_string(end_utc)),
         ]
 
+        if pos_config_id:
+            domain_sunat_error.append(("config_id", "=", int(pos_config_id)))
+
         if "sunat_state" in PosOrder._fields:
             domain_sunat_error.append(("sunat_state", "=", "error"))
             sunat_error = PosOrder.search_count(domain_sunat_error)
         else:
             sunat_error = 0
-
-        if pos_config_id:
-            domain_sunat_error.append(("config_id", "=", int(pos_config_id)))
 
         pos_configs = PosConfig.search([], order="name asc")
 

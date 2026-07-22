@@ -3,13 +3,17 @@
 import { Component, onWillStart, useState } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { rpc } from "@web/core/network/rpc";
+import {useService} from "@web/core/utils/hooks";
 
 class DashboardTiendas extends Component {
     setup() {
         const today = new Date().toISOString().slice(0, 10);
 
+        this.action = useService("action");
+
         this.state = useState({
             loading: true,
+            activeSection: "ventas_pos",
             filters: {
                 date_from: today,
                 date_to: today,
@@ -60,6 +64,117 @@ class DashboardTiendas extends Component {
 
     onChangePosConfig(ev) {
         this.state.filters.pos_config_id = ev.target.value;
+    }
+
+    openOrders() {
+        const domain = [
+            ["date_order", ">=", this.state.filters.date_from + " 00:00:00"],
+            ["date_order", "<=", this.state.filters.date_to + " 23:59:59"],
+            ["state", "in", ["paid", "done", "invoiced"]],
+        ];
+
+        if (this.state.filters.pos_config_id) {
+            domain.push(["config_id", "=", parseInt(this.state.filters.pos_config_id)]);
+        }
+
+        // Excluir anuladas y reversas
+        domain.push(["venta_anulada", "=", false]);
+        domain.push(["es_reversa_anulacion", "=", false]);
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Órdenes POS del periodo",
+            res_model: "pos.order",
+            view_mode: "list,form",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain: domain,
+            target: "current",
+        });
+    }
+
+    openSunatErrors() {
+        const domain = [
+            ["date_order", ">=", this.state.filters.date_from + " 00:00:00"],
+            ["date_order", "<=", this.state.filters.date_to + " 23:59:59"],
+            ["sunat_state", "=", "error"],
+        ];
+
+        if (this.state.filters.pos_config_id) {
+            domain.push(["config_id", "=", parseInt(this.state.filters.pos_config_id)]);
+        }
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Órdenes POS con error SUNAT",
+            res_model: "pos.order",
+            view_mode: "list,form",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain: domain,
+            target: "current",
+        });
+    }
+
+    openAnulaciones() {
+        const domain = [
+            ["date_order", ">=", this.state.filters.date_from + " 00:00:00"],
+            ["date_order", "<=", this.state.filters.date_to + " 23:59:59"],
+            ["venta_anulada", "=", true],
+        ];
+
+        if (this.state.filters.pos_config_id) {
+            domain.push(["config_id", "=", parseInt(this.state.filters.pos_config_id)]);
+        }
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Órdenes POS anuladas",
+            res_model: "pos.order",
+            view_mode: "list,form",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain: domain,
+            target: "current",
+        });
+    }
+
+    openDevoluciones() {
+        const domain = [
+            ["date_order", ">=", this.state.filters.date_from + " 00:00:00"],
+            ["date_order", "<=", this.state.filters.date_to + " 23:59:59"],
+            ["lines.qty", "<", 0],
+        ];
+
+        if (this.state.filters.pos_config_id) {
+            domain.push(["config_id", "=", parseInt(this.state.filters.pos_config_id)]);
+        }
+
+        // No mezclar reversas de anulación con devoluciones reales
+        domain.push(["es_reversa_anulacion", "=", false]);
+
+        this.action.doAction({
+            type: "ir.actions.act_window",
+            name: "Órdenes POS con devolución / reembolso",
+            res_model: "pos.order",
+            view_mode: "list,form",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain: domain,
+            target: "current",
+        });
+    }
+
+    setSection(section) {
+        this.state.activeSection = section;
     }
 
     formatMoney(value) {
