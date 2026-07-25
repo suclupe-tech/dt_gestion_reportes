@@ -448,18 +448,366 @@
 
                 <!-- SECCIÓN PRODUCTOS -->
                 <t t-if="state.activeSection === 'productos'">
-                    <h2>Productos</h2>
-                    <div class="alert alert-info">
-                        Pendiente de configurar: dashboard de productos vendidos, rotación y ranking.
+                    <div class="mb-3">
+                        <h3 class="mb-0">Dashboard Productos</h3>
+                        <small class="text-muted">
+                            Análisis de productos vendidos, rotación y productos sin movimiento
+                        </small>
                     </div>
+
+                    <!-- Filtros -->
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body py-3">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-3">
+                                    <label class="form-label">Fecha desde</label>
+                                    <input type="date"
+                                        class="form-control"
+                                        t-att-value="state.productosFilters.date_from"
+                                        t-on-change="onChangeProductosDateFrom"/>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Fecha hasta</label>
+                                    <input type="date"
+                                        class="form-control"
+                                        t-att-value="state.productosFilters.date_to"
+                                        t-on-change="onChangeProductosDateTo"/>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label class="form-label">Punto de venta</label>
+                                    <select class="form-select"
+                                            t-att-value="state.productosFilters.pos_config_id"
+                                            t-on-change="onChangeProductosPosConfig">
+                                        <option value="">Todos</option>
+                                        <t t-foreach="state.productosData.puntos_venta" t-as="pos" t-key="pos.id">
+                                            <option t-att-value="pos.id">
+                                                <t t-esc="pos.name"/>
+                                            </option>
+                                        </t>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <button class="btn btn-primary w-100"
+                                            t-on-click="loadProductosData">
+                                        Aplicar filtros
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <t t-if="state.productosLoading">
+                        <div class="alert alert-info">
+                            Cargando información de productos...
+                        </div>
+                    </t>
+
+                    <t t-else="">
+                        <!-- KPIs -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body">
+                                        <small class="text-muted">Total productos vendidos</small>
+                                        <h3 class="mb-0">
+                                            <t t-esc="state.productosData.total_productos_vendidos"/>
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body">
+                                        <small class="text-muted">Productos vendidos distintos</small>
+                                        <h3 class="mb-0">
+                                            <t t-esc="state.productosData.productos_vendidos_distintos"/>
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body">
+                                        <small class="text-muted">Producto más vendido</small>
+                                        <h6 class="mb-0">
+                                            <t t-esc="state.productosData.producto_mas_vendido || '-'"/>
+                                        </h6>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body">
+                                        <small class="text-muted">Productos sin movimiento</small>
+                                        <h3 class="mb-0">
+                                            <t t-esc="state.productosData.productos_sin_movimiento"/>
+                                        </h3>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tablas -->
+                        <div class="row mt-2">
+                            <!-- Top productos vendidos -->
+                            <div class="col-xl-6 col-lg-12 mb-3">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body py-3">
+                                        <h5 class="mb-3">Top productos más vendidos</h5>
+
+                                        <table class="table table-sm table-hover align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th class="text-end">Cantidad</th>
+                                                    <th class="text-end">Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-if="state.productosData.top_productos.length">
+                                                    <t t-foreach="state.productosData.top_productos" t-as="line" t-key="line.producto">
+                                                        <tr>
+                                                            <td>
+                                                                <t t-esc="line.producto"/>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <t t-esc="line.cantidad"/>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                S/ <t t-esc="formatMoney(line.total)"/>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <tr>
+                                                        <td colspan="3" class="text-center text-muted">
+                                                            No hay productos vendidos en el periodo.
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Productos con stock pero sin venta -->
+                            <div class="col-xl-6 col-lg-12 mb-3">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body py-3">
+                                        <h5 class="mb-3">Productos con stock pero sin venta</h5>
+
+                                        <table class="table table-sm table-hover align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th class="text-end">Stock actual</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-if="state.productosData.productos_sin_movimiento_lista.length">
+                                                    <t t-foreach="state.productosData.productos_sin_movimiento_lista" t-as="line" t-key="line.producto">
+                                                        <tr>
+                                                            <td>
+                                                                <t t-esc="line.producto"/>
+                                                            </td>
+                                                            <td class="text-end">
+                                                                <t t-esc="line.stock"/>
+                                                            </td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <tr>
+                                                        <td colspan="2" class="text-center text-muted">
+                                                            No hay productos con stock sin venta.
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
                 </t>
 
                 <!-- SECCIÓN STOCK -->
                 <t t-if="state.activeSection === 'stock'">
-                    <h2>Stock / Almacén</h2>
-                    <div class="alert alert-info">
-                        Pendiente de configurar: stock por almacén, stock crítico y productos sin movimiento.
+
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="mb-0">Dashboard Stock / Almacén</h2>
+                            <small class="text-muted">Stock disponible por almacén</small>
+                        </div>
+
+                        <div class="d-flex align-items-end gap-2">
+                            <div>
+                                <label class="form-label mb-1">Almacén</label>
+                                <select class="form-select"
+                                        t-att-value="state.stockFilters.warehouse_id"
+                                        t-on-change="onChangeWarehouse">
+                                    <option value="">Todos</option>
+                                    <t t-foreach="state.stockData.almacenes" t-as="warehouse" t-key="warehouse.id">
+                                        <option t-att-value="warehouse.id">
+                                            <t t-esc="warehouse.name"/>
+                                        </option>
+                                    </t>
+                                </select>
+                            </div>
+
+                            <button class="btn btn-primary" t-on-click="loadStockData">
+                                Actualizar
+                            </button>
+                        </div>
                     </div>
+
+                    <t t-if="state.stockLoading">
+                        <div class="alert alert-info">
+                            Cargando datos de stock...
+                        </div>
+                    </t>
+
+                    <t t-else="">
+
+                        <div class="alert alert-success py-2">
+                            Datos de stock cargados correctamente.
+                        </div>
+
+                        <!-- KPI STOCK -->
+                        <div class="row mt-3">
+
+                            <div class="col-md-3 mb-3">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body py-3">
+                                        <small>Total unidades disponibles</small>
+                                        <h4 class="mb-0">
+                                            <t t-esc="state.stockData.total_unidades"/>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body py-3">
+                                        <small>Productos con stock</small>
+                                        <h4 class="mb-0">
+                                            <t t-esc="state.stockData.productos_con_stock"/>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <div class="card shadow-sm border-danger h-100">
+                                    <div class="card-body py-3">
+                                        <small>Productos sin stock</small>
+                                        <h4 class="mb-0">
+                                            <t t-esc="state.stockData.productos_sin_stock"/>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <div class="card shadow-sm border-warning h-100">
+                                    <div class="card-body py-3">
+                                        <small>Productos con stock bajo</small>
+                                        <h4 class="mb-0">
+                                            <t t-esc="state.stockData.productos_stock_bajo"/>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- TABLA STOCK POR ALMACÉN -->
+                        <div class="row mt-2">
+                            <div class="col-xl-6 col-lg-12 mb-3">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body py-3">
+                                        <h5 class="mb-3">Stock por almacén</h5>
+
+                                        <table class="table table-sm table-hover align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Almacén</th>
+                                                    <th class="text-end">Productos</th>
+                                                    <th class="text-end">Unidades disponibles</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-if="state.stockData.stock_por_almacen.length">
+                                                    <t t-foreach="state.stockData.stock_por_almacen" t-as="line" t-key="line.almacen">
+                                                        <tr>
+                                                            <td><t t-esc="line.almacen"/></td>
+                                                            <td class="text-end"><t t-esc="line.productos"/></td>
+                                                            <td class="text-end"><t t-esc="line.unidades"/></td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <tr>
+                                                        <td colspan="3" class="text-center text-muted">
+                                                            No hay stock disponible para mostrar.
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-6 col-lg-12 mb-3">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-body py-3">
+                                        <h5 class="mb-3">Productos con stock bajo</h5>
+
+                                        <table class="table table-sm table-hover align-middle mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th>Almacén</th>
+                                                    <th class="text-end">Stock</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <t t-if="state.stockData.productos_stock_bajo_lista.length">
+                                                    <t t-foreach="state.stockData.productos_stock_bajo_lista" t-as="line" t-key="line.producto + line.almacen">
+                                                        <tr>
+                                                            <td><t t-esc="line.producto"/></td>
+                                                            <td><t t-esc="line.almacen"/></td>
+                                                            <td class="text-end"><t t-esc="line.stock"/></td>
+                                                        </tr>
+                                                    </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <tr>
+                                                        <td colspan="3" class="text-center text-muted">
+                                                            No hay productos con stock bajo.
+                                                        </td>
+                                                    </tr>
+                                                </t>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </t>
                 </t>
 
                 <!-- SECCIÓN PRODUCCIÓN -->

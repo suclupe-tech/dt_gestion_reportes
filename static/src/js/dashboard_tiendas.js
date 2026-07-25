@@ -13,12 +13,19 @@ class DashboardTiendas extends Component {
 
         this.state = useState({
             loading: true,
+            stockLoading: false,
             activeSection: "ventas_pos",
+
             filters: {
                 date_from: today,
                 date_to: today,
                 pos_config_id: "",
             },
+
+            stockFilters: {
+                warehouse_id: "",
+            },
+
             data: {
                 ventas_hoy: 0,
                 ordenes_hoy: 0,
@@ -33,6 +40,55 @@ class DashboardTiendas extends Component {
                 puntos_venta: [],
                 pos_config_id: false,
                 anulaciones_devoluciones: [],
+            },
+
+            stockData: {
+                total_unidades: 0,
+                productos_con_stock: 0,
+                productos_sin_stock: 0,
+                productos_stock_bajo: 0,
+                stock_por_almacen: [],
+                productos_stock_bajo_lista: [],
+                almacenes: [],
+                warehouse_id: false,
+            },
+
+            productosLoading: false,
+
+            productosFilters: {
+                date_from: today,
+                date_to: today,
+                pos_config_id: "",
+            },
+
+            productosData: {
+                total_productos_vendidos: 0,
+                productos_vendidos_distintos: 0,
+                producto_mas_vendido: "",
+                productos_sin_movimiento: 0,
+                top_productos: [],
+                productos_sin_movimiento_lista: [],
+                puntos_venta: [],
+                pos_config_id: false,
+            },
+
+            cajaLoading: false,
+
+            cajaFilters: {
+                date_from: today,
+                date_to: today,
+                pos_config_id: "",
+            },
+
+            cajaData: {
+                total_ventas: 0,
+                total_efectivo: 0,
+                total_digital: 0,
+                total_ordenes: 0,
+                ventas_por_medio: [],
+                resumen_por_punto_venta: [],
+                puntos_venta: [],
+                pos_config_id: false,
             },
         });
 
@@ -173,8 +229,85 @@ class DashboardTiendas extends Component {
         });
     }
 
-    setSection(section) {
+    async setSection(section) {
         this.state.activeSection = section;
+
+        if (section === "stock") {
+            await this.loadStockData();
+        }
+
+        if (section === "productos") {
+            await this.loadProductosData();
+        }
+
+        if (section === "caja") {
+            await this.loadCajaData();
+        }
+    }
+
+    async loadStockData() {
+        this.state.stockLoading = true;
+
+        const data = await rpc("/dt_gestion_reportes/dashboard_stock/data", {
+            warehouse_id: this.state.stockFilters.warehouse_id,
+        });
+
+        this.state.stockData = data;
+        this.state.stockLoading = false;
+    }
+
+    async loadProductosData() {
+        this.state.productosLoading = true;
+
+        const data = await rpc("/dt_gestion_reportes/dashboard_productos/data", {
+            date_from: this.state.productosFilters.date_from,
+            date_to: this.state.productosFilters.date_to,
+            pos_config_id: this.state.productosFilters.pos_config_id,
+        });
+
+        this.state.productosData = data;
+        this.state.productosLoading = false;
+    }
+
+    async loadCajaData() {
+        this.state.cajaLoading = true;
+
+        const data = await rpc("/dt_gestion_reportes/dashboard_caja/data", {
+            date_from: this.state.cajaFilters.date_from,
+            date_to: this.state.cajaFilters.date_to,
+            pos_config_id: this.state.cajaFilters.pos_config_id,
+        });
+
+        this.state.cajaData = data;
+        this.state.cajaLoading = false;
+    }
+
+    onChangeProductosDateFrom(ev) {
+        this.state.productosFilters.date_from = ev.target.value;
+    }
+
+    onChangeProductosDateTo(ev) {
+        this.state.productosFilters.date_to = ev.target.value;
+    }
+
+    onChangeProductosPosConfig(ev) {
+        this.state.productosFilters.pos_config_id = ev.target.value;
+    }
+
+    onChangeCajaDateFrom(ev) {
+        this.state.cajaFilters.date_from = ev.target.value;
+    }
+
+    onChangeCajaDateTo(ev) {
+        this.state.cajaFilters.date_to = ev.target.value;
+    }
+
+    onChangeCajaPosConfig(ev) {
+        this.state.cajaFilters.pos_config_id = ev.target.value;
+    }
+
+    onChangeWarehouse(ev) {
+        this.state.stockFilters.warehouse_id = ev.target.value;
     }
 
     formatMoney(value) {

@@ -381,3 +381,449 @@ class DashboardTiendasController(http.Controller):
             "pos_config_id": int(pos_config_id) if pos_config_id else False,
             "anulaciones_devoluciones": anulaciones_devoluciones,
         }
+
+    @http.route("/dt_gestion_reportes/dashboard_stock/data", type="json", auth="user")
+    def get_dashboard_stock_data(self, warehouse_id=None):
+        StockQuant = request.env["stock.quant"].sudo()
+        StockWarehouse = request.env["stock.warehouse"].sudo()
+        ProductProduct = request.env["product.product"].sudo()
+
+        warehouses = StockWarehouse.search([], order="name asc")
+
+        almacenes = [
+            {
+                "id": warehouse.id,
+                "name": warehouse.name,
+            }
+            for warehouse in warehouses
+        ]
+
+        productos_excluidos = [
+            "bolsa",
+            "empaque",
+            "delivery",
+            "envío",
+            "envio",
+            "redondeo",
+            "ajuste",
+            "descuento",
+            "propina",
+            "propinas",
+        ]
+
+        domain_quant = [
+            ("location_id.usage", "=", "internal"),
+            ("product_id.active", "=", True),
+            ("product_id.type", "in", ["product", "consu"]),
+        ]
+
+        if warehouse_id:
+            selected_warehouse = StockWarehouse.browse(int(warehouse_id))
+            if selected_warehouse.exists():
+                domain_quant.append(
+                    ("location_id", "child_of", selected_warehouse.view_location_id.id)
+                )
+
+        quants = StockQuant.search(domain_quant)
+
+        stock_producto = {}
+        stock_por_almacen_dict = {}
+        productos_stock_bajo_lista = []
+
+        for quant in quants:
+            product = quant.product_id
+            nombre_producto = (product.display_name or "").lower()
+
+            if any(palabra in nombre_producto for palabra in productos_excluidos):
+                continue
+
+            cantidad_disponible = quant.quantity - quant.reserved_quantity
+
+            if product.id not in stock_producto:
+                stock_producto[product.id] = {
+                    "producto": product.display_name,
+                    "cantidad": 0.0,
+                }
+
+            stock_producto[product.id]["cantidad"] += cantidad_disponible
+
+            # 2. Para stock disponible por almacén solo contamos stock positivo
+            if cantidad_disponible <= 0:
+                continue
+
+            almacen_nombre = "Sin almacén"
+
+            for warehouse in warehouses:
+                view_location = warehouse.view_location_id
+                location = quant.location_id
+
+                if view_location and location.parent_path and view_location.parent_path:
+                    if location.parent_path.startswith(view_location.parent_path):
+                        almacen_nombre = warehouse.name
+                        break
+
+            # Productos con stock bajo
+            if 0 < cantidad_disponible <= 20:
+                productos_stock_bajo_lista.append(
+                    {
+                        "producto": product.display_name or "Sin producto",
+                        "almacen": almacen_nombre,
+                        "stock": round(cantidad_disponible, 2),
+                    }
+                )
+
+            if almacen_nombre not in stock_por_almacen_dict:
+                stock_por_almacen_dict[almacen_nombre] = {
+                    "almacen": almacen_nombre,
+                    "productos": set(),
+                    "unidades": 0.0,
+                }
+
+            stock_por_almacen_dict[almacen_nombre]["productos"].add(product.id)
+            stock_por_almacen_dict[almacen_nombre]["unidades"] += cantidad_disponible
+
+        total_unidades = sum(
+            item["unidades"] for item in stock_por_almacen_dict.values()
+        )
+
+        productos_con_stock_ids = set()
+        productos_sin_stock_ids = set()
+        productos_stock_bajo_ids = set()
+
+        for quant in quants:
+            product = quant.product_id
+            nombre_producto = (product.display_name or "").lower()
+
+            if any(palabra in nombre_producto for palabra in productos_excluidos):
+                continue
+
+            cantidad_disponible = quant.quantity - quant.reserved_quantity
+
+            if cantidad_disponible > 0:
+                productos_con_stock_ids.add(product.id)
+
+            if 0 < cantidad_disponible <= 20:
+                productos_stock_bajo_ids.add(product.id)
+
+        # Productos sin stock se calcula con los productos reales del filtro
+        productos_validos_ids = set(stock_producto.keys())
+
+        productos_sin_stock_ids = productos_validos_ids - productos_con_stock_ids
+
+        productos_con_stock = len(productos_con_stock_ids)
+        productos_sin_stock = len(productos_sin_stock_ids)
+        productos_stock_bajo = len(productos_stock_bajo_ids)
+
+        stock_por_almacen = []
+
+        for item in stock_por_almacen_dict.values():
+            stock_por_almacen.append(
+                {
+                    "almacen": item["almacen"],
+                    "productos": len(item["productos"]),
+                    "unidades": round(item["unidades"], 2),
+                }
+            )
+
+        stock_por_almacen = sorted(
+            stock_por_almacen, key=lambda x: x["unidades"], reverse=True
+        )
+
+        productos_stock_bajo_lista = sorted(
+            productos_stock_bajo_lista, key=lambda x: x["stock"]
+        )[:10]
+
+        return {
+            "total_unidades": round(total_unidades, 2),
+            "productos_con_stock": productos_con_stock,
+            "productos_sin_stock": productos_sin_stock,
+            "productos_stock_bajo": productos_stock_bajo,
+            "stock_por_almacen": stock_por_almacen,
+            "productos_stock_bajo_lista": productos_stock_bajo_lista,
+            "almacenes": almacenes,
+            "warehouse_id": int(warehouse_id) if warehouse_id else False,
+        }
+
+    @http.route(
+        "/dt_gestion_reportes/dashboard_productos/data", type="json", auth="user"
+    )
+    def get_dashboard_productos_data(
+        self, date_from=None, date_to=None, pos_config_id=None
+    ):
+        PosOrder = request.env["pos.order"].sudo()
+        StockQuant = request.env["stock.quant"].sudo()
+        StockWarehouse = request.env["stock.warehouse"].sudo()
+
+        user_tz = request.env.user.tz or "America/Lima"
+        tz = pytz.timezone(user_tz)
+
+        if not date_from:
+            date_from = fields.Date.context_today(request.env.user)
+        if not date_to:
+            date_to = fields.Date.context_today(request.env.user)
+
+        date_from_obj = fields.Date.from_string(date_from)
+        date_to_obj = fields.Date.from_string(date_to)
+
+        start_local = tz.localize(datetime.combine(date_from_obj, time.min))
+        end_local = tz.localize(datetime.combine(date_to_obj, time.max))
+
+        start_utc = start_local.astimezone(pytz.UTC).replace(tzinfo=None)
+        end_utc = end_local.astimezone(pytz.UTC).replace(tzinfo=None)
+
+        domain_orders = [
+            ("date_order", ">=", start_utc),
+            ("date_order", "<=", end_utc),
+            ("state", "in", ["paid", "done", "invoiced"]),
+        ]
+
+        if "venta_anulada" in PosOrder._fields:
+            domain_orders.append(("venta_anulada", "=", False))
+
+        if "es_reversa_anulacion" in PosOrder._fields:
+            domain_orders.append(("es_reversa_anulacion", "=", False))
+
+        if pos_config_id:
+            domain_orders.append(("config_id", "=", int(pos_config_id)))
+
+        orders = PosOrder.search(domain_orders)
+
+        productos_excluidos = [
+            "bolsa",
+            "empaque",
+            "delivery",
+            "envío",
+            "envio",
+            "redondeo",
+            "ajuste",
+            "descuento",
+            "propina",
+            "propinas",
+        ]
+
+        productos_vendidos = {}
+
+        for order in orders:
+            for line in order.lines:
+                product = line.product_id
+                nombre_producto = (product.display_name or "").lower()
+
+                if any(palabra in nombre_producto for palabra in productos_excluidos):
+                    continue
+
+                if product.type == "service":
+                    continue
+
+                if line.qty <= 0:
+                    continue
+
+                if line.price_subtotal <= 0:
+                    continue
+
+                if product.id not in productos_vendidos:
+                    productos_vendidos[product.id] = {
+                        "producto": product.display_name,
+                        "cantidad": 0.0,
+                        "total": 0.0,
+                    }
+
+                productos_vendidos[product.id]["cantidad"] += line.qty
+                productos_vendidos[product.id]["total"] += line.price_subtotal_incl
+
+        top_productos = sorted(
+            productos_vendidos.values(), key=lambda x: x["cantidad"], reverse=True
+        )[:10]
+
+        total_productos_vendidos = sum(
+            item["cantidad"] for item in productos_vendidos.values()
+        )
+
+        productos_vendidos_distintos = len(productos_vendidos)
+
+        producto_mas_vendido = ""
+        if top_productos:
+            producto_mas_vendido = top_productos[0]["producto"]
+
+        # Stock actual positivo por producto
+        domain_quant = [
+            ("location_id.usage", "=", "internal"),
+            ("product_id.active", "=", True),
+            ("product_id.type", "in", ["product", "consu"]),
+        ]
+
+        quants = StockQuant.search(domain_quant)
+
+        stock_actual = {}
+
+        for quant in quants:
+            product = quant.product_id
+            nombre_producto = (product.display_name or "").lower()
+
+            if any(palabra in nombre_producto for palabra in productos_excluidos):
+                continue
+
+            cantidad_disponible = quant.quantity - quant.reserved_quantity
+
+            if cantidad_disponible <= 0:
+                continue
+
+            if product.id not in stock_actual:
+                stock_actual[product.id] = {
+                    "producto": product.display_name,
+                    "stock": 0.0,
+                }
+
+            stock_actual[product.id]["stock"] += cantidad_disponible
+
+        productos_sin_movimiento = []
+
+        for product_id, item in stock_actual.items():
+            if product_id not in productos_vendidos:
+                productos_sin_movimiento.append(
+                    {
+                        "producto": item["producto"],
+                        "stock": round(item["stock"], 2),
+                    }
+                )
+
+        productos_sin_movimiento = sorted(
+            productos_sin_movimiento, key=lambda x: x["stock"], reverse=True
+        )[:10]
+
+        puntos_venta = request.env["pos.config"].sudo().search([], order="name asc")
+
+        return {
+            "total_productos_vendidos": round(total_productos_vendidos, 2),
+            "productos_vendidos_distintos": productos_vendidos_distintos,
+            "producto_mas_vendido": producto_mas_vendido,
+            "productos_sin_movimiento": len(productos_sin_movimiento),
+            "top_productos": top_productos,
+            "productos_sin_movimiento_lista": productos_sin_movimiento,
+            "puntos_venta": [{"id": pos.id, "name": pos.name} for pos in puntos_venta],
+            "pos_config_id": int(pos_config_id) if pos_config_id else False,
+        }
+
+    @http.route("/dt_gestion_reportes/dashboard_caja/data", type="json", auth="user")
+    def get_dashboard_caja_data(self, date_from=None, date_to=None, pos_config_id=None):
+        PosOrder = request.env["pos.order"].sudo()
+        PosPayment = request.env["pos.payment"].sudo()
+        PosConfig = request.env["pos.config"].sudo()
+
+        user_tz = request.env.user.tz or "America/Lima"
+        tz = pytz.timezone(user_tz)
+
+        if not date_from:
+            date_from = fields.Date.context_today(request.env.user)
+        if not date_to:
+            date_to = fields.Date.context_today(request.env.user)
+
+        date_from_obj = fields.Date.from_string(date_from)
+        date_to_obj = fields.Date.from_string(date_to)
+
+        start_local = tz.localize(datetime.combine(date_from_obj, time.min))
+        end_local = tz.localize(datetime.combine(date_to_obj, time.max))
+
+        start_utc = start_local.astimezone(pytz.UTC).replace(tzinfo=None)
+        end_utc = end_local.astimezone(pytz.UTC).replace(tzinfo=None)
+
+        domain_orders = [
+            ("date_order", ">=", start_utc),
+            ("date_order", "<=", end_utc),
+            ("state", "in", ["paid", "done", "invoiced"]),
+        ]
+
+        if "venta_anulada" in PosOrder._fields:
+            domain_orders.append(("venta_anulada", "=", False))
+
+        if "es_reversa_anulacion" in PosOrder._fields:
+            domain_orders.append(("es_reversa_anulacion", "=", False))
+
+        if pos_config_id:
+            domain_orders.append(("config_id", "=", int(pos_config_id)))
+
+        orders = PosOrder.search(domain_orders)
+
+        total_ventas = sum(order.amount_total for order in orders)
+
+        ventas_por_medio_dict = {}
+        resumen_pos_dict = {}
+
+        total_efectivo = 0.0
+        total_digital = 0.0
+
+        palabras_efectivo = ["efectivo", "cash"]
+
+        for order in orders:
+            pos_name = order.config_id.name or "Sin punto de venta"
+
+            if pos_name not in resumen_pos_dict:
+                resumen_pos_dict[pos_name] = {
+                    "punto_venta": pos_name,
+                    "ventas": 0.0,
+                    "ordenes": 0,
+                    "efectivo": 0.0,
+                    "digital": 0.0,
+                }
+
+            resumen_pos_dict[pos_name]["ventas"] += order.amount_total
+            resumen_pos_dict[pos_name]["ordenes"] += 1
+
+            for payment in order.payment_ids:
+                metodo = payment.payment_method_id.name or "Sin método"
+                metodo_lower = metodo.lower()
+                monto = payment.amount or 0.0
+
+                if metodo not in ventas_por_medio_dict:
+                    ventas_por_medio_dict[metodo] = {
+                        "medio_pago": metodo,
+                        "monto": 0.0,
+                    }
+
+                ventas_por_medio_dict[metodo]["monto"] += monto
+
+                es_efectivo = any(
+                    palabra in metodo_lower for palabra in palabras_efectivo
+                )
+
+                if es_efectivo:
+                    total_efectivo += monto
+                    resumen_pos_dict[pos_name]["efectivo"] += monto
+                else:
+                    total_digital += monto
+                    resumen_pos_dict[pos_name]["digital"] += monto
+
+        ventas_por_medio = sorted(
+            ventas_por_medio_dict.values(), key=lambda x: x["monto"], reverse=True
+        )
+
+        resumen_por_punto_venta = sorted(
+            resumen_pos_dict.values(), key=lambda x: x["ventas"], reverse=True
+        )
+
+        puntos_venta = PosConfig.search([], order="name asc")
+
+        return {
+            "total_ventas": round(total_ventas, 2),
+            "total_efectivo": round(total_efectivo, 2),
+            "total_digital": round(total_digital, 2),
+            "total_ordenes": len(orders),
+            "ventas_por_medio": [
+                {
+                    "medio_pago": item["medio_pago"],
+                    "monto": round(item["monto"], 2),
+                }
+                for item in ventas_por_medio
+            ],
+            "resumen_por_punto_venta": [
+                {
+                    "punto_venta": item["punto_venta"],
+                    "ventas": round(item["ventas"], 2),
+                    "ordenes": item["ordenes"],
+                    "efectivo": round(item["efectivo"], 2),
+                    "digital": round(item["digital"], 2),
+                }
+                for item in resumen_por_punto_venta
+            ],
+            "puntos_venta": [{"id": pos.id, "name": pos.name} for pos in puntos_venta],
+            "pos_config_id": int(pos_config_id) if pos_config_id else False,
+        }
