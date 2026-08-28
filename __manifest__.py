@@ -32,11 +32,16 @@
         "report/pos_commercial_report.xml",
         "data/server_action.xml",
         "data/pos_order_excel_action.xml",
+        "views/reporte_movimientos_prendas_views.xml",
     ],
     "assets": {
         "web.assets_backend": [
             "dt_gestion_reportes/static/src/js/dashboard_tiendas.js",
             "dt_gestion_reportes/static/src/xml/dashboard_tiendas.xml",
+        ],
+        "point_of_sale._assets_pos": [
+            "dt_gestion_reportes/static/src/js/reporte_movimientos_prendas_pos.js",
+            "dt_gestion_reportes/static/src/xml/reporte_movimientos_prendas_pos.xml",
         ],
     },
     "installable": True,

@@ -1,0 +1,531 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="dt_gestion_reportes.ReporteMovimientosPrendasTicket">
+
+        <div class="reporte-movimientos-prendas-ticket"
+             style="
+                width:76mm;
+                max-width:76mm;
+                background:#fff;
+                color:#000;
+                font-family:Arial, Helvetica, sans-serif;
+                font-size:10px;
+                line-height:1.35;
+                padding:3mm;
+                box-sizing:border-box;
+             ">
+
+            <!-- ===============================
+                 CABECERA GENERAL
+                 =============================== -->
+
+            <div style="
+                text-align:center;
+                font-size:12px;
+                font-weight:700;
+                line-height:1.2;
+            ">
+                REPORTE DE MOVIMIENTOS
+                <br/>
+                DE PRENDAS
+            </div>
+
+            <div style="
+                text-align:center;
+                font-size:11px;
+                font-weight:700;
+                text-transform:uppercase;
+                margin-top:4px;
+            ">
+                <t t-esc="reporte.tienda"/>
+            </div>
+
+            <div style="
+                text-align:center;
+                font-size:9px;
+                font-weight:400;
+                margin-top:2px;
+            ">
+                FECHA:
+                <span style="font-weight:600;">
+                    <t t-esc="reporte.fecha"/>
+                </span>
+            </div>
+
+            <!-- LÍNEA SÓLIDA CABECERA -->
+            <div style="
+                border-top:1px solid #000;
+                margin-top:7px;
+                margin-bottom:8px;
+            "></div>
+
+
+            <!-- ===============================
+                 PRENDAS VENDIDAS
+                 =============================== -->
+
+            <div style="
+                text-align:left;
+                font-size:10px;
+                font-weight:700;
+                margin:0 0 4px 2px;
+            ">
+                PRENDAS VENDIDAS
+            </div>
+
+            <!-- CABECERA GRIS -->
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                background-color:#d9d9d9 !important;
+                box-shadow:inset 0 0 0 1000px #d9d9d9;
+                -webkit-print-color-adjust:exact !important;
+                print-color-adjust:exact !important;
+                font-size:9px;
+                font-weight:700;
+                padding:3px 3px;
+                margin-bottom:2px;
+            ">
+                <span style="width:80%;">
+                    DESCRIPCIÓN
+                </span>
+
+                <span style="
+                    width:20%;
+                    text-align:right;
+                ">
+                    CANT.
+                </span>
+            </div>
+
+            <t t-if="reporte.ventas and reporte.ventas.length">
+
+                <t t-foreach="reporte.ventas"
+                   t-as="linea"
+                   t-key="linea.product_id">
+
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:flex-start;
+                        padding:2px 3px;
+                        font-size:10px;
+                        font-weight:400;
+                    ">
+                        <span style="
+                            width:80%;
+                            padding-right:4px;
+                        ">
+                            <t t-esc="linea.descripcion"/>
+                        </span>
+
+                        <span style="
+                            width:20%;
+                            text-align:right;
+                        ">
+                            <t t-esc="Math.round(linea.cantidad || 0)"/>
+                        </span>
+                    </div>
+
+                </t>
+
+            </t>
+
+            <t t-else="">
+                <div style="
+                    text-align:center;
+                    padding:5px 0;
+                    font-size:9px;
+                    font-weight:400;
+                ">
+                    Sin movimientos
+                </div>
+            </t>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                padding:4px 3px 1px 3px;
+                margin-top:2px;
+                font-size:10px;
+                font-weight:700;
+            ">
+                <span>TOTAL PRENDAS VENDIDAS</span>
+
+                <span>
+                    <t t-esc="Math.round(reporte.totalVendidas || 0)"/>
+                </span>
+            </div>
+
+            <!-- SEPARADOR -->
+            <div style="
+                border-top:1px dashed #000;
+                margin:7px 0;
+            "></div>
+
+
+            <!-- ===============================
+                 TRANSFERENCIAS
+                 =============================== -->
+
+            <t t-if="reporte.transferencias and reporte.transferencias.length">
+
+                <t t-foreach="reporte.transferencias"
+                   t-as="transferencia"
+                   t-key="transferencia.destino">
+
+                    <div style="
+                        text-align:left;
+                        font-size:10px;
+                        font-weight:700;
+                        text-transform:uppercase;
+                        margin:0 0 4px 2px;
+                    ">
+                        TRANSFERENCIA A
+                        <t t-esc="transferencia.destino"/>
+                    </div>
+
+                    <!-- CABECERA GRIS -->
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        background-color:#d9d9d9 !important;
+                        box-shadow:inset 0 0 0 1000px #d9d9d9;
+                        -webkit-print-color-adjust:exact !important;
+                        print-color-adjust:exact !important;
+                        font-size:9px;
+                        font-weight:700;
+                        padding:3px 3px;
+                        margin-bottom:2px;
+                    ">
+                        <span style="width:80%;">
+                            DESCRIPCIÓN
+                        </span>
+
+                        <span style="
+                            width:20%;
+                            text-align:right;
+                        ">
+                            CANT.
+                        </span>
+                    </div>
+
+                    <t t-foreach="transferencia.lineas"
+                       t-as="linea"
+                       t-key="linea.product_id">
+
+                        <div style="
+                            display:flex;
+                            justify-content:space-between;
+                            align-items:flex-start;
+                            padding:2px 3px;
+                            font-size:10px;
+                            font-weight:400;
+                        ">
+                            <span style="
+                                width:80%;
+                                padding-right:4px;
+                            ">
+                                <t t-esc="linea.descripcion"/>
+                            </span>
+
+                            <span style="
+                                width:20%;
+                                text-align:right;
+                            ">
+                                <t t-esc="Math.round(linea.cantidad || 0)"/>
+                            </span>
+                        </div>
+
+                    </t>
+
+                    <div style="
+                        display:flex;
+                        justify-content:space-between;
+                        padding:4px 3px 1px 3px;
+                        margin-top:2px;
+                        font-size:10px;
+                        font-weight:700;
+                    ">
+                        <span>TOTAL TRANSFERIDO</span>
+
+                        <span>
+                            <t t-esc="Math.round(transferencia.total || 0)"/>
+                        </span>
+                    </div>
+
+                    <div style="
+                        border-top:1px dashed #000;
+                        margin:7px 0;
+                    "></div>
+
+                </t>
+
+            </t>
+
+
+            <!-- ===============================
+                 INGRESOS
+                 =============================== -->
+
+            <div style="
+                text-align:left;
+                font-size:10px;
+                font-weight:700;
+                margin:0 0 4px 2px;
+            ">
+                INGRESOS POR TRANSFERENCIA
+            </div>
+
+            <!-- CABECERA GRIS -->
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                background-color:#d9d9d9 !important;
+                box-shadow:inset 0 0 0 1000px #d9d9d9;
+                -webkit-print-color-adjust:exact !important;
+                print-color-adjust:exact !important;
+                font-size:9px;
+                font-weight:700;
+                padding:3px 3px;
+                margin-bottom:2px;
+            ">
+                <span style="width:20%;">
+                    ORIGEN
+                </span>
+
+                <span style="width:60%;">
+                    DESCRIPCIÓN
+                </span>
+
+                <span style="
+                    width:20%;
+                    text-align:right;
+                ">
+                    CANT.
+                </span>
+            </div>
+
+            <t t-if="reporte.ingresos and reporte.ingresos.length">
+
+                <t t-foreach="reporte.ingresos"
+                    t-as="linea"
+                    t-key="linea.origen + '-' + linea.product_id">
+
+                        <div style="
+                            display:flex;
+                            justify-content:space-between;
+                            align-items:flex-start;
+                            padding:2px 3px;
+                            font-size:10px;
+                            font-weight:400;
+                        ">
+
+                            <span style="
+                                width:20%;
+                                font-weight:600;
+                                padding-right:3px;
+                            ">
+                                <t t-esc="linea.origen"/>
+                            </span>
+
+                            <span style="
+                                width:60%;
+                                padding-right:4px;
+                            ">
+                                <t t-esc="linea.descripcion"/>
+                            </span>
+
+                            <span style="
+                                width:20%;
+                                text-align:right;
+                            ">
+                                <t t-esc="Math.round(linea.cantidad || 0)"/>
+                            </span>
+
+                        </div>
+
+                    </t>
+
+            </t>
+
+            <t t-else="">
+                <div style="
+                    text-align:center;
+                    padding:5px 0;
+                    font-size:9px;
+                    font-weight:400;
+                ">
+                    Sin movimientos
+                </div>
+            </t>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                padding:4px 3px 1px 3px;
+                margin-top:2px;
+                font-size:10px;
+                font-weight:700;
+            ">
+                <span>TOTAL PRENDAS INGRESADAS</span>
+
+                <span>
+                    <t t-esc="Math.round(reporte.totalIngresadas || 0)"/>
+                </span>
+            </div>
+
+            <div style="
+                border-top:1px dashed #000;
+                margin:7px 0;
+            "></div>
+
+
+            <!-- ===============================
+                 RESUMEN
+                 =============================== -->
+
+            <div style="
+                text-align:left;
+                font-size:10px;
+                font-weight:700;
+                margin:0 0 4px 2px;
+            ">
+                RESUMEN GENERAL
+            </div>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                padding:2px 3px;
+                font-size:10px;
+                font-weight:400;
+            ">
+                <span>PRENDAS VENDIDAS</span>
+
+                <span style="font-weight:600;">
+                    <t t-esc="Math.round(reporte.totalVendidas || 0)"/>
+                </span>
+            </div>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                padding:2px 3px;
+                font-size:10px;
+                font-weight:400;
+            ">
+                <span>PRENDAS TRANSFERIDAS</span>
+
+                <span style="font-weight:600;">
+                    <t t-esc="Math.round(reporte.totalTransferidas || 0)"/>
+                </span>
+            </div>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                padding:2px 3px;
+                font-size:10px;
+                font-weight:400;
+            ">
+                <span>PRENDAS INGRESADAS</span>
+
+                <span style="font-weight:600;">
+                    <t t-esc="Math.round(reporte.totalIngresadas || 0)"/>
+                </span>
+            </div>
+
+            <div style="
+                border-top:1px dashed #000;
+                margin-top:7px;
+            "></div>
+
+
+            <!-- ===============================
+                 FIRMAS
+                 =============================== -->
+
+            <div style="height:32px;"></div>
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                text-align:center;
+                font-size:8px;
+                font-weight:400;
+            ">
+
+                <div style="width:29%;">
+                    <div style="
+                        border-top:1px solid #000;
+                        padding-top:3px;
+                    ">
+                        CAJERO
+                    </div>
+                </div>
+
+                <div style="width:29%;">
+                    <div style="
+                        border-top:1px solid #000;
+                        padding-top:3px;
+                    ">
+                        ASISTENTE
+                    </div>
+                </div>
+
+                <div style="width:29%;">
+                    <div style="
+                        border-top:1px solid #000;
+                        padding-top:3px;
+                    ">
+                        GERENTE
+                    </div>
+                </div>
+
+            </div>
+
+            <div style="
+                text-align:center;
+                font-size:8px;
+                font-weight:400;
+                margin-top:13px;
+            ">
+                *** FIN DE REPORTE ***
+            </div>
+
+        </div>
+
+    </t>
+
+
+    <!-- ===============================
+         BOTÓN REPORTE DIARIO
+         =============================== -->
+
+    <t t-name="dt_gestion_reportes.ClosePosPopupReporteDiario"
+       t-inherit="point_of_sale.ClosePosPopup"
+       t-inherit-mode="extension">
+
+        <xpath expr="//button[@t-on-click='downloadSalesReport']"
+               position="replace">
+
+            <button class="button icon btn btn-secondary"
+                    t-on-click="imprimirReporteDiario"
+                    t-att-class="this.ui.isSmall ? 'w-100' : 'btn-lg ms-auto'"
+                    title="Imprimir reporte diario de movimientos de prendas">
+
+                Reporte diario
+
+                <i t-if="!this.ui.isSmall"
+                   class="fa fa-print"
+                   role="img"/>
+
+            </button>
+
+        </xpath>
+
+    </t>
+
+</templates>
