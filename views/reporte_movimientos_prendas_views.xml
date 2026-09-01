@@ -36,21 +36,112 @@
         </field>
     </record>
 
+    <record id="view_movimientos_prendas_session_list" model="ir.ui.view">
+        <field name="name">pos.session.movimientos.prendas.list</field>
+        <field name="model">pos.session</field>
+        <field name="arch" type="xml">
+            <list string="Movimientos de Prendas"
+                create="0"
+                delete="0"
+                edit="0">
+
+                <field name="name" string="Sesión"/>
+                <field name="config_id" string="Punto de Venta"/>
+                <field name="start_at" string="Apertura"/>
+                <field name="stop_at" string="Cierre"/>
+                <field name="state" string="Estado"/>
+
+            </list>
+        </field>
+    </record>
+
+    <record id="view_movimientos_prendas_session_form" model="ir.ui.view">
+        <field name="name">pos.session.movimientos.prendas.form</field>
+        <field name="model">pos.session</field>
+        <field name="arch" type="xml">
+            <form string="Movimientos de Prendas" create="0" edit="0" delete="0">
+
+                <header>
+                    <button name="action_imprimir_movimientos_ticket"
+                            string="IMPRIMIR TICKET"
+                            type="object"
+                            class="btn-primary"
+                            icon="fa-print"/>
+
+                    <button name="action_imprimir_movimientos_a4"
+                            string="IMPRIMIR A4"
+                            type="object"
+                            class="btn-secondary"
+                            icon="fa-file-pdf-o"/>
+
+                </header>
+
+                <sheet>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="config_id"
+                                string="Punto de Venta"
+                                readonly="1"/>
+
+                            <field name="state"
+                                string="Estado"
+                                readonly="1"/>
+                        </group>
+
+                        <group>
+                            <field name="start_at"
+                                string="Apertura"
+                                readonly="1"/>
+
+                            <field name="stop_at"
+                                string="Cierre"
+                                readonly="1"/>
+                        </group>
+                    </group>
+
+                </sheet>
+
+            </form>
+        </field>
+    </record>
+
     <!-- ACCIÓN -->
     <record id="action_reporte_movimientos_prendas" model="ir.actions.act_window">
         <field name="name">Movimientos de Prendas</field>
-        <field name="res_model">dt.reporte.movimientos.prendas.wizard</field>
+        <field name="res_model">pos.session</field>
+        <field name="view_mode">list,form</field>
+        <field name="target">current</field>
+    </record>
+
+    <record id="action_movimientos_prendas_view_list"
+            model="ir.actions.act_window.view">
+        <field name="sequence" eval="1"/>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_movimientos_prendas_session_list"/>
+        <field name="act_window_id" ref="action_reporte_movimientos_prendas"/>
+    </record>
+
+    <record id="action_movimientos_prendas_view_form"
+            model="ir.actions.act_window.view">
+        <field name="sequence" eval="2"/>
         <field name="view_mode">form</field>
-        <field name="view_id" ref="view_reporte_movimientos_prendas_wizard_form"/>
-        <field name="target">new</field>
+        <field name="view_id" ref="view_movimientos_prendas_session_form"/>
+        <field name="act_window_id" ref="action_reporte_movimientos_prendas"/>
     </record>
 
     <menuitem
         id="menu_reporte_movimientos_prendas"
         name="Movimientos de Prendas"
-        parent="dt_gestion_reportes.menu_dashboard_tiendas_root"
+        parent="point_of_sale.menu_point_rep"
         action="action_reporte_movimientos_prendas"
-        sequence="2"
+        sequence="6"
     />
 
 </odoo>

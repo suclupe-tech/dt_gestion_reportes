@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <template id="reporte_movimientos_prendas_a4">
+        <html>
+            <head>
+                <meta charset="utf-8"/>
+
+                <style>
+                    @page {
+                        size: A4;
+                        margin: 12mm;
+                    }
+
+                    body {
+                        margin: 0;
+                        color: #000;
+                        background: #fff;
+                        font-family: Arial, Helvetica, sans-serif;
+                        font-size: 12px;
+                    }
+
+                    .page {
+                        width: 185mm;
+                        max-width: 100%;
+                        margin: 0 auto;
+                        box-sizing: border-box;
+                    }
+
+                    .title {
+                        text-align: center;
+                        font-size: 20px;
+                        font-weight: 700;
+                        margin-bottom: 4px;
+                    }
+
+                    .subtitle {
+                        text-align: center;
+                        font-size: 15px;
+                        font-weight: 700;
+                        text-transform: uppercase;
+                    }
+
+                    .date {
+                        text-align: center;
+                        margin-top: 5px;
+                        margin-bottom: 20px;
+                    }
+
+                    .section-title {
+                        font-size: 14px;
+                        font-weight: 700;
+                        margin-top: 18px;
+                        margin-bottom: 6px;
+                    }
+
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 8px;
+                    }
+
+                    th {
+                        background: #e5e5e5;
+                        border: 1px solid #777;
+                        padding: 6px;
+                        text-align: left;
+                        font-size: 11px;
+                    }
+
+                    td {
+                        border: 1px solid #aaa;
+                        padding: 6px;
+                    }
+
+                    .qty {
+                        width: 90px;
+                        text-align: right;
+                    }
+
+                    .total-row {
+                        font-weight: 700;
+                    }
+
+                    .summary {
+                        width: 420px;
+                        margin-left: auto;
+                        margin-top: 20px;
+                    }
+
+                    .summary td {
+                        font-weight: 700;
+                    }
+
+                    .signatures {
+                        display: flex;
+                        justify-content: space-between;
+                        margin-top: 70px;
+                        text-align: center;
+                    }
+
+                    .signature {
+                        width: 28%;
+                        border-top: 1px solid #000;
+                        padding-top: 5px;
+                        font-size: 11px;
+                    }
+
+                    .no-print {
+                        text-align: center;
+                        margin-top: 25px;
+                    }
+
+                    .no-print button {
+                        padding: 10px 20px;
+                        font-size: 13px;
+                    }
+
+                    @media print {
+                        .no-print {
+                            display: none !important;
+                        }
+                    }
+                </style>
+
+                <script>
+                    window.onload = function () {
+                        setTimeout(function () {
+                            window.print();
+                        }, 500);
+                    };
+                </script>
+
+            </head>
+
+            <body>
+
+                <div class="page">
+
+                    <!-- CABECERA -->
+                    <div class="title">
+                        REPORTE DE MOVIMIENTOS DE PRENDAS
+                    </div>
+
+                    <div class="subtitle">
+                        <t t-esc="reporte.get('tienda', '')"/>
+                    </div>
+
+                    <div class="date">
+                        FECHA:
+                        <strong>
+                            <t t-esc="reporte.get('fecha', '')"/>
+                        </strong>
+                    </div>
+
+
+                    <!-- PRENDAS VENDIDAS -->
+                    <div class="section-title">
+                        PRENDAS VENDIDAS
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>DESCRIPCIÓN</th>
+                                <th class="qty">CANTIDAD</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <t t-if="reporte.get('ventas')">
+
+                                <t t-foreach="reporte.get('ventas')" t-as="linea">
+                                    <tr>
+                                        <td>
+                                            <t t-esc="linea.get('descripcion', '')"/>
+                                        </td>
+
+                                        <td class="qty">
+                                            <t t-esc="'%.0f' % (linea.get('cantidad', 0) or 0)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+
+                            </t>
+
+                            <t t-else="">
+                                <tr>
+                                    <td colspan="2" style="text-align:center;">
+                                        Sin movimientos
+                                    </td>
+                                </tr>
+                            </t>
+
+                            <tr class="total-row">
+                                <td>TOTAL PRENDAS VENDIDAS</td>
+                                <td class="qty">
+                                    <t t-esc="'%.0f' % (reporte.get('totalVendidas', 0) or 0)"/>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+
+                    <!-- TRANSFERENCIAS -->
+                    <t t-if="reporte.get('transferencias')">
+
+                        <t t-foreach="reporte.get('transferencias')" t-as="transferencia">
+
+                            <div class="section-title">
+                                TRANSFERENCIA A
+                                <t t-esc="transferencia.get('destino', '')"/>
+                            </div>
+
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>DESCRIPCIÓN</th>
+                                        <th class="qty">CANTIDAD</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    <t t-foreach="transferencia.get('lineas', [])" t-as="linea">
+                                        <tr>
+                                            <td>
+                                                <t t-esc="linea.get('descripcion', '')"/>
+                                            </td>
+
+                                            <td class="qty">
+                                                <t t-esc="'%.0f' % (linea.get('cantidad', 0) or 0)"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+
+                                    <tr class="total-row">
+                                        <td>TOTAL TRANSFERIDO</td>
+                                        <td class="qty">
+                                            <t t-esc="'%.0f' % (transferencia.get('total', 0) or 0)"/>
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+
+                        </t>
+
+                    </t>
+
+
+                    <!-- INGRESOS -->
+                    <div class="section-title">
+                        INGRESOS POR TRANSFERENCIA
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:20%;">ORIGEN</th>
+                                <th>DESCRIPCIÓN</th>
+                                <th class="qty">CANTIDAD</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            <t t-if="reporte.get('ingresos')">
+
+                                <t t-foreach="reporte.get('ingresos')" t-as="linea">
+                                    <tr>
+                                        <td>
+                                            <t t-esc="linea.get('origen', '')"/>
+                                        </td>
+
+                                        <td>
+                                            <t t-esc="linea.get('descripcion', '')"/>
+                                        </td>
+
+                                        <td class="qty">
+                                            <t t-esc="'%.0f' % (linea.get('cantidad', 0) or 0)"/>
+                                        </td>
+                                    </tr>
+                                </t>
+
+                            </t>
+
+                            <t t-else="">
+                                <tr>
+                                    <td colspan="3" style="text-align:center;">
+                                        Sin movimientos
+                                    </td>
+                                </tr>
+                            </t>
+
+                            <tr class="total-row">
+                                <td colspan="2">
+                                    TOTAL PRENDAS INGRESADAS
+                                </td>
+
+                                <td class="qty">
+                                    <t t-esc="'%.0f' % (reporte.get('totalIngresadas', 0) or 0)"/>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+
+                    <!-- RESUMEN GENERAL -->
+                    <table class="summary">
+
+                        <tr>
+                            <td>PRENDAS VENDIDAS</td>
+                            <td class="qty">
+                                <t t-esc="'%.0f' % (reporte.get('totalVendidas', 0) or 0)"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>PRENDAS TRANSFERIDAS</td>
+                            <td class="qty">
+                                <t t-esc="'%.0f' % (reporte.get('totalTransferidas', 0) or 0)"/>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>PRENDAS INGRESADAS</td>
+                            <td class="qty">
+                                <t t-esc="'%.0f' % (reporte.get('totalIngresadas', 0) or 0)"/>
+                            </td>
+                        </tr>
+
+                    </table>
+
+
+                    <!-- FIRMAS -->
+                    <div class="signatures">
+
+                        <div class="signature">
+                            CAJERO
+                        </div>
+
+                        <div class="signature">
+                            ASISTENTE
+                        </div>
+
+                        <div class="signature">
+                            GERENTE
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="no-print">
+                    <button onclick="window.print()">
+                        Imprimir otra vez
+                    </button>
+                </div>
+
+            </body>
+        </html>
+    </template>
+
+</odoo>

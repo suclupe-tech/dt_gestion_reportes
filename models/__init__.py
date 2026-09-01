@@ -5,3 +5,4 @@ from . import pos_order
 from . import stock_picking
 from . import reporte_movimientos_prendas
 from . import reporte_movimientos_prendas_wizard
+from . import pos_session

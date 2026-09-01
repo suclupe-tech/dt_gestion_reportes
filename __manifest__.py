@@ -33,6 +33,8 @@
         "data/server_action.xml",
         "data/pos_order_excel_action.xml",
         "views/reporte_movimientos_prendas_views.xml",
+        "views/reporte_movimientos_prendas_ticket.xml",
+        "views/reporte_movimientos_prendas_a4.xml",
     ],
     "assets": {
         "web.assets_backend": [

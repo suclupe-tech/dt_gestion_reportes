@@ -49,6 +49,22 @@ class PosConfig(models.Model):
 
             acumulador[producto_id]["cantidad"] += cantidad
 
+        def restar_producto(acumulador, producto, cantidad):
+            if not producto or not cantidad or cantidad <= 0:
+                return
+
+            producto_id = producto.id
+
+            if producto_id not in acumulador:
+                return
+
+            acumulador[producto_id]["cantidad"] -= cantidad
+
+            # Si la devolución dejó el movimiento en cero,
+            # ya no debe aparecer en el reporte.
+            if acumulador[producto_id]["cantidad"] <= 0:
+                acumulador.pop(producto_id, None)
+
         def obtener_codigo_almacen(location):
             if not location:
                 return ""
@@ -215,6 +231,80 @@ class PosConfig(models.Model):
                 if origen_es_tienda and destino_es_tienda:
                     continue
 
+                # ==========================================================
+                # DEVOLUCIONES DE ODOO DEL MISMO DÍA
+                # ==========================================================
+                movimientos_devolucion = picking.move_ids.filtered(
+                    lambda m: (
+                        m.origin_returned_move_id
+                        and m.origin_returned_move_id.picking_id
+                        and m.origin_returned_move_id.picking_id.date_done
+                        and inicio_utc
+                        <= m.origin_returned_move_id.picking_id.date_done
+                        < fin_utc
+                    )
+                )
+
+                if movimientos_devolucion:
+
+                    for move in movimientos_devolucion:
+
+                        movimiento_original = move.origin_returned_move_id
+
+                        cantidad = (
+                            move.quantity
+                            if "quantity" in move._fields
+                            else move.product_uom_qty
+                        )
+
+                        # --------------------------------------------------
+                        # La devolución SALE de esta tienda.
+                        # Significa que originalmente había INGRESADO.
+                        # Ejemplo:
+                        # Planta -> Huánuco
+                        # Huánuco -> Planta (devolución)
+                        # --------------------------------------------------
+                        if origen_es_tienda and not destino_es_tienda:
+
+                            origen_original = obtener_codigo_almacen(
+                                movimiento_original.location_id
+                            )
+
+                            if not origen_original:
+                                origen_original = movimiento_original.dt_location_label(
+                                    movimiento_original.location_id
+                                )
+
+                            restar_producto(
+                                ingresos_agrupados[origen_original],
+                                move.product_id,
+                                cantidad,
+                            )
+
+                        # --------------------------------------------------
+                        # La devolución INGRESA a esta tienda.
+                        # Significa que originalmente había SALIDO.
+                        # Ejemplo:
+                        # Huánuco -> Planta
+                        # Planta -> Huánuco (devolución)
+                        # --------------------------------------------------
+                        elif destino_es_tienda and not origen_es_tienda:
+
+                            destino_original = movimiento_original.dt_location_label(
+                                movimiento_original.location_dest_id
+                            )
+
+                            if destino_original:
+                                restar_producto(
+                                    transferencias_salida[destino_original],
+                                    move.product_id,
+                                    cantidad,
+                                )
+
+                    # Esta devolución ya fue procesada.
+                    # No debe contarse nuevamente como transferencia normal.
+                    continue
+
                 # =========================
                 # SALIDAS A OTRA TIENDA
                 # =========================
@@ -278,6 +368,9 @@ class PosConfig(models.Model):
             key=lambda item: item[0].lower(),
         ):
             lineas = list(productos.values())
+
+            if not lineas:
+                continue
 
             lineas.sort(key=lambda item: (item["descripcion"] or "").lower())
 
