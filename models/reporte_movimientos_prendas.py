@@ -12,6 +12,13 @@ class PosConfig(models.Model):
     def get_reporte_movimientos_prendas(self, fecha=None):
         self.ensure_one()
 
+        # Primero comprobar que el usuario tenga acceso al POS solicitado
+        self.check_access("read")
+
+        # El cálculo interno del reporte necesita leer movimientos
+        # relacionados aunque existan restricciones por tienda.
+        self = self.sudo()
+
         # =========================
         # FECHA DEL REPORTE
         # =========================
